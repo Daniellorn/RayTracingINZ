@@ -15,7 +15,8 @@ project "RayTracingINZ"
     files
     {
         "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h"
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/res/Shaders/**.hlsl"
     }
 
     links
@@ -25,6 +26,27 @@ project "RayTracingINZ"
         "User32.lib",
         "DXGI.lib"
     }
+
+    filter "files:**PixelShader.hlsl"
+        buildmessage "Compiling PixelShader"
+        buildcommands {
+            "fxc /T ps_5_0 /Fo %{wks.location}/RayTracingINZ/res/shaders/PixelShader.fxc %{file.relpath}"
+        }
+        buildoutputs {"%{wks.location}/RayTracingINZ/res/shaders/PixelShader.fxc"}
+
+    filter "files:**VertexShader.hlsl"
+        buildmessage "Compiling VertexShader"
+        buildcommands {
+            "fxc /T vs_5_0 /Fo %{wks.location}/RayTracingINZ/res/shaders/VertexShader.fxc %{file.relpath}"
+        }
+        buildoutputs {"%{wks.location}/RayTracingINZ/res/shaders/VertexShader.fxc"}
+
+    filter "files:**ComputeShader.hlsl"
+        buildmessage "Compiling ComputeShader"
+        buildcommands {
+            "fxc /T cs_5_0 /Fo %{wks.location}/RayTracingINZ/res/shaders/ComputeShader.fxc %{file.relpath}"
+        }
+        buildoutputs {"%{wks.location}/RayTracingINZ/res/shaders/ComputeShader.fxc"}
 
     filter "system:windows"
         cppdialect "C++23"

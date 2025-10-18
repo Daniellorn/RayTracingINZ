@@ -37,7 +37,7 @@ bin/
 *.sln
 *.vcxproj
 *.vcxproj.user
-
+*.vcxproj.filters
 
 # Build results on 'Bin' directories
 **/[Bb]in/*
