@@ -82,7 +82,8 @@ namespace App {
 
 		//VertexShader
 		m_VS.CreateShader(m_Device.device, L"res/shaders/VertexShader.fxc");
-		m_VS.AddInputDesc("POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0);
+		m_VS.AddInputDesc({
+			{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 } });
 		m_VS.CreateLayout(m_Device.device);
 
 		//PixelShader

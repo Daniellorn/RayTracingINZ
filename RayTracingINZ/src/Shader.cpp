@@ -26,6 +26,23 @@ namespace App {
 			m_Blob->GetBufferPointer(), m_Blob->GetBufferSize(), &m_Layout));
 	}
 
+	void VertexShader::AddInputDesc(std::initializer_list<VertexBufferLayout> list)
+	{
+		for (const auto& input : list)
+		{
+			D3D11_INPUT_ELEMENT_DESC desc;
+			desc.SemanticName = input.name;
+			desc.SemanticIndex = input.index;
+			desc.Format = input.format;
+			desc.InputSlot = input.inputSlot;
+			desc.AlignedByteOffset = input.offset;
+			desc.InputSlotClass = input.classification;
+			desc.InstanceDataStepRate = input.dataStepRate;
+
+			m_InputDescArray.push_back(desc);
+		}
+	}
+
 	void PixelShader::CreateShader(ComPtr<ID3D11Device>& device, const std::wstring& filename)
 	{
 		CHECK(D3DReadFileToBlob(filename.c_str(), &m_Blob));

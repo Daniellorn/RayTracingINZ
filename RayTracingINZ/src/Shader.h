@@ -4,8 +4,20 @@
 #include <wrl/client.h>
 #include <string>
 #include <vector>
+#include <initializer_list>
 
 namespace App {
+
+	struct VertexBufferLayout
+	{
+		const char* name;
+		uint32_t index;
+		DXGI_FORMAT format;
+		uint32_t inputSlot;
+		uint32_t offset;
+		D3D11_INPUT_CLASSIFICATION classification;
+		uint32_t dataStepRate;
+	};
 
 	class VertexShader
 	{
@@ -19,21 +31,7 @@ namespace App {
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> GetLayout() const { return m_Layout; }
 		Microsoft::WRL::ComPtr<ID3DBlob> GetBlob() const { return m_Blob; }
 
-		void AddInputDesc(const char* name, uint32_t index, DXGI_FORMAT format, uint32_t inputSlot, uint32_t offset,
-			D3D11_INPUT_CLASSIFICATION classification, uint32_t dataStepRate)
-		{
-
-			D3D11_INPUT_ELEMENT_DESC desc;
-			desc.SemanticName = name;
-			desc.SemanticIndex = index;
-			desc.Format = format;
-			desc.InputSlot = inputSlot;
-			desc.AlignedByteOffset = offset;
-			desc.InputSlotClass = classification;
-			desc.InstanceDataStepRate = dataStepRate;
-
-			m_InputDescArray.push_back(desc);
-		}
+		void AddInputDesc(std::initializer_list<VertexBufferLayout> list);
 
 		const std::vector<D3D11_INPUT_ELEMENT_DESC>& GetInputDesc() const { return m_InputDescArray; }
 
