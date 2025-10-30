@@ -30,7 +30,7 @@ namespace App {
 			constantBufferData.SysMemPitch = 0;
 			constantBufferData.SysMemSlicePitch = 0;
 
-			CHECK(device->CreateBuffer(&m_ConstantBufferConfig, &constantBufferData, &m_ConstantBuffer));
+			CHECK(device->CreateBuffer(&m_ConstantBufferConfig, &constantBufferData, &m_ConstantBuffer.GetAddressOf()));
 		}
 
 		void BindPS(ID3D11DeviceContext* deviceContext, const T& data, uint32_t slot)
@@ -115,13 +115,13 @@ namespace App {
 			m_Data = data;
 		}
 
-		//To trzeba zmienic bo caly czas kopiuje
-		void BindPS(ID3D11DeviceContext4* deviceContext, uint32_t slot)
+		// TODO: To trzeba zmienic bo caly czas kopiuje
+		void BindPS(ID3D11DeviceContext* deviceContext, uint32_t slot)
 		{
 			deviceContext->PSSetShaderResources(slot, 1, m_SRV.GetAddressOf());
 		}
 
-		void BindCS(ID3D11DeviceContext4* deviceContext, uint32_t slot)
+		void BindCS(ID3D11DeviceContext* deviceContext, uint32_t slot)
 		{
 			deviceContext->CSSetShaderResources(slot, 1, m_SRV.GetAddressOf());
 		}

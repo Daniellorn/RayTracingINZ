@@ -4,6 +4,7 @@
 
 #include "AppWindow.h"
 #include "Renderer.h"
+#include "Scene.h"
 
 
 namespace App {
@@ -23,6 +24,8 @@ namespace App {
 		WindowSpecification m_WindowSpec;
 
 		std::unique_ptr<Renderer> m_Renderer;
+
+		Scene m_Scene;
 	};
 }
 

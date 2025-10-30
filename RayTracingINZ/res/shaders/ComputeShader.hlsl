@@ -1,9 +1,6 @@
 static const float MAX_FLOAT = 100000;
 static const int MAX_OBJ = 100;
 
-RWTexture2D<float4> outputTex : register(u0);
-
-
 struct Ray
 {
     float3 origin;
@@ -16,17 +13,33 @@ struct HitInfo
     float3 hitPoint;
     float t;
     float hitDistance;
-    //int objectIndex;
-    //int materialIndex;
+    int objectIndex;
+    int materialIndex;
 };
 
 struct Sphere
 {
-    float4 position;
+    float x, y, z;
     float radius;
-    //int materialIndex;
-    //int type;
+
+    int materialIndex;
+    int type;
 };
+
+struct Material
+{
+    float4 albedo;
+    float4 EmissionColor;
+    float roughness;
+    float glossiness;
+    float EmissionPower;
+};
+
+
+StructuredBuffer<Sphere> g_Spheres : register(t0);
+StructuredBuffer<Material> g_Materials : register(t1);
+RWTexture2D<float4> outputTex : register(u0);
+
 
 float3 RayAt(Ray ray, float t)
 {
@@ -35,7 +48,8 @@ float3 RayAt(Ray ray, float t)
 
 float SphereIntersection(Ray ray, Sphere sphere)
 {
-    float3 oc = ray.origin - sphere.position.xyz;
+    float3 spherePosition = float3(sphere.x, sphere.y, sphere.z);
+    float3 oc = ray.origin - spherePosition;
     
     float a = 1; //dot(ray.direction, ray.direction);
     float b = 2.0 * dot(ray.direction, oc);
@@ -85,17 +99,12 @@ HitInfo CheckIntersection(Ray ray)
 {
     HitInfo info = (HitInfo)0;
     info.hitDistance = MAX_FLOAT;
-    //info.objectIndex = -1.0;
-    
-    Sphere spheres[2];
-    spheres[0].position = float4(2.0, 1.0, 0.0, 1.0);
-    spheres[0].radius = 1.0;
-    spheres[1].position = float4(-1.0, 0.0, 5.0, 1.0);
-    spheres[1].radius = 1.0;
+    info.objectIndex = -1.0;
+   
     
     for (int i = 0; i < 2; i++)
     {
-        float t = SphereIntersection(ray, spheres[i]);
+        float t = SphereIntersection(ray, g_Spheres[i]);
         
         if (t < 0.0)
         {
@@ -107,7 +116,9 @@ HitInfo CheckIntersection(Ray ray)
             info.hitDistance = t;
             info.t = t;
             info.hitPoint = RayAt(ray, t);
-            info.normal = normalize(info.hitPoint - spheres[i].position.xyz);
+            info.normal = normalize(info.hitPoint - float3(g_Spheres[i].x, g_Spheres[i].y, g_Spheres[i].z));
+            info.objectIndex = i;
+            info.materialIndex = g_Spheres[i].materialIndex;
         }
     }
     
@@ -124,6 +135,7 @@ float3 TraceRay(Ray ray)
     float3 color;
     
     HitInfo info = CheckIntersection(ray);
+    Material sphereMaterial = g_Materials[info.materialIndex];
     
     if (info.hitDistance < 0.0)
     {
@@ -132,7 +144,7 @@ float3 TraceRay(Ray ray)
         return float3(lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), a));
     }
     
-    color = info.normal * 0.5 + 0.5;
+    color = sphereMaterial.albedo;
     
     return color;
 }
@@ -160,10 +172,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
     Ray ray;
     ray.origin = float3(0.0, 0.0, -2.0);
     ray.direction = normalize(float3(normalizedCord.x, normalizedCord.y, 1.0));
-    
-    Sphere sphere;
-    sphere.position = float4(0.0, 0.0, 1.0, 0.0);
-    sphere.radius = 1.0;
       
     float3 color = TraceRay(ray);
     

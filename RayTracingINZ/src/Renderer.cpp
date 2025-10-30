@@ -6,8 +6,8 @@
 
 namespace App {
 	
-	Renderer::Renderer(HWND handle, int width, int height) : m_WindowHandle(handle), m_Width(width),
-		m_Height(height)
+	Renderer::Renderer(HWND handle, int width, int height, Scene scene) : m_WindowHandle(handle), m_Width(width),
+		m_Height(height), m_Scene(scene)
 	{
 		m_NumGroupsX = (1280 + workGroupSizeX - 1) / workGroupSizeX;
 		m_NumGroupsY = (720 + workGroupSizeY - 1) / workGroupSizeY;
@@ -53,6 +53,14 @@ namespace App {
 		//Tekstura do PS (blit pass)
 		m_Swapchain.swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(m_BackbufferTexture.GetAddressOf()));
 		CHECK(m_Device.device->CreateRenderTargetView(m_BackbufferTexture.Get(), nullptr, &m_RenderTarget));
+
+
+		auto spheres = m_Scene.GetSpheres();
+		auto materials = m_Scene.GetMaterials();
+
+		m_SpheresBuffer = StructuredBuffer<Sphere>(m_Device.device.Get(), spheres);
+		m_MaterialsBuffer = StructuredBuffer<Material>(m_Device.device.Get(), materials);
+
 
 		OnRender();
 
@@ -111,6 +119,9 @@ namespace App {
 	{
 		ID3D11ShaderResourceView* nullSRV = nullptr;
 		m_Device.deviceContext->PSSetShaderResources(0, 1, &nullSRV);
+
+		m_SpheresBuffer.BindCS(m_Device.deviceContext.Get(), 0);
+		m_MaterialsBuffer.BindCS(m_Device.deviceContext.Get(), 1);
 
 		const UINT stride = sizeof(Vertex);
 		const UINT offset = 0;

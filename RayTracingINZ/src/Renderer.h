@@ -8,6 +8,8 @@
 
 #include "Device.h"
 #include "Shader.h"
+#include "Scene.h"
+#include "Uniforms.h"
 
 namespace App {
 
@@ -29,7 +31,8 @@ namespace App {
 	{
 	public:
 
-		Renderer(HWND handle, int width, int height);
+		Renderer(HWND handle, int width, int height, Scene scene);
+
 		~Renderer() = default;
 
 		void InitRenderer();
@@ -58,6 +61,10 @@ namespace App {
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
 		D3D11_BUFFER_DESC m_VertexBufferConfig;
 
+		Scene m_Scene;
+
+		StructuredBuffer<Sphere> m_SpheresBuffer;
+		StructuredBuffer<Material> m_MaterialsBuffer;
 
 		struct Vertex
 		{

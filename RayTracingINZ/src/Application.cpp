@@ -1,11 +1,20 @@
 #include "Application.h"
+#include <DirectXMath.h>
+
+using namespace DirectX;
 
 namespace App {
 
-	void Application::Init()
+	void Application::Init() 
 	{
+		m_Scene.AddObject(Sphere(0.0f, 1.0f, 0.0f, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
+		m_Scene.AddObject(Sphere(0.0f, -1.0f, 0.0f, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
+		m_Scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 1.0f));
+		m_Scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 1.0f));
+
+
 		m_WindowHandle = CreateWindowApp(m_WindowSpec);
-		m_Renderer = std::make_unique<Renderer>(m_WindowHandle, m_WindowSpec.width, m_WindowSpec.height);
+		m_Renderer = std::make_unique<Renderer>(m_WindowHandle, m_WindowSpec.width, m_WindowSpec.height, m_Scene);
 
 	}
 	void Application::Run()
