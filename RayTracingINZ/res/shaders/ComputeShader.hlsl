@@ -37,7 +37,7 @@ float SphereIntersection(Ray ray, Sphere sphere)
 {
     float3 oc = ray.origin - sphere.position.xyz;
     
-    float a = dot(ray.direction, ray.direction);
+    float a = 1; //dot(ray.direction, ray.direction);
     float b = 2.0 * dot(ray.direction, oc);
     float c = dot(oc, oc) - sphere.radius * sphere.radius;
     
