@@ -2,11 +2,17 @@
 
 #include "Utils.h"
 #include "Renderer.h"
+#include <imgui.h>
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK App::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
 	Renderer* renderer = (Renderer*)GetWindowLongPtr(window, GWLP_USERDATA);
+
+	if (ImGui_ImplWin32_WndProcHandler(window, message, wParam, lParam))
+		return true;
 
 	switch (message)
 	{
@@ -21,11 +27,6 @@ LRESULT CALLBACK App::WindowProc(HWND window, UINT message, WPARAM wParam, LPARA
 
 			int clientWidth = clientRect.right - clientRect.left;
 			int clientHeight = clientRect.bottom - clientRect.top;
-			
-			char buffer[128];
-			sprintf_s(buffer, "Client size: %d x %d\n", clientWidth, clientHeight);
-
-			OutputDebugStringA(buffer);
 
 			if (clientWidth > 0 && clientHeight > 0)
 				renderer->Resize(clientWidth, clientHeight);

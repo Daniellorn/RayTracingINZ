@@ -37,7 +37,7 @@ namespace App {
 		result.swapchainParams.Scaling = DXGI_SCALING_NONE;
 		result.swapchainParams.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		result.swapchainParams.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		result.swapchainParams.Flags = 0;
+		result.swapchainParams.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;;
 
 		ComPtr< IDXGIFactory6> factory6;
 		ComPtr<IDXGISwapChain1> tempSwapChain;

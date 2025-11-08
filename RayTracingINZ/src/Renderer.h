@@ -44,6 +44,8 @@ namespace App {
 
 		void Resize(int width, int height);
 
+		Device& GetDevice() { return m_Device; }
+
 	private:
 		HWND m_WindowHandle;
 		int m_Width;
