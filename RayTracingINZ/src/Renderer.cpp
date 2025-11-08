@@ -9,8 +9,10 @@ namespace App {
 	Renderer::Renderer(HWND handle, int width, int height, Scene scene) : m_WindowHandle(handle), m_Width(width),
 		m_Height(height), m_Scene(scene)
 	{
-		m_NumGroupsX = (1280 + workGroupSizeX - 1) / workGroupSizeX;
-		m_NumGroupsY = (720 + workGroupSizeY - 1) / workGroupSizeY;
+		m_NumGroupsX = (m_Width + workGroupSizeX - 1) / workGroupSizeX;
+		m_NumGroupsY = (m_Height + workGroupSizeY - 1) / workGroupSizeY;
+
+		InitRenderer();
 	}
 
 	void Renderer::InitRenderer()
@@ -100,8 +102,8 @@ namespace App {
 		//ComputeShader
 		m_CS.CreateShader(m_Device.device, L"res/shaders/ComputeShader.fxc");
 
-		m_ViewPort.Width = m_Width;
-		m_ViewPort.Height = m_Height;
+		m_ViewPort.Width = (float)m_Width;
+		m_ViewPort.Height = (float)m_Height;
 		m_ViewPort.MinDepth = 0;
 		m_ViewPort.MaxDepth = 1;
 		m_ViewPort.TopLeftX = 0;
@@ -141,10 +143,60 @@ namespace App {
 		m_Device.deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_Device.deviceContext->IASetVertexBuffers(0, 1, m_VertexBuffer.GetAddressOf(), &stride, &offset);
 
-
 		m_VS.Bind(m_Device.deviceContext.Get());
 		m_PS.Bind(m_Device.deviceContext.Get());
 
 		m_Device.deviceContext->Draw(3, 0);
+	}
+	void Renderer::Resize(int width, int height)
+	{
+		m_Device.deviceContext->ClearState();
+		m_Device.deviceContext->Flush();
+
+		m_RenderTarget.Reset();
+		m_BackbufferTexture.Reset();
+		m_Swapchain.swapchain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+
+		CHECK(m_Swapchain.swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+			reinterpret_cast<void**>(m_BackbufferTexture.GetAddressOf())));
+
+		CHECK(m_Device.device->CreateRenderTargetView(m_BackbufferTexture.Get(), nullptr, &m_RenderTarget));
+
+		m_CSTexture.UAV.Reset();
+		m_CSTexture.SRV.Reset();
+		m_CSTexture.renderTexture.Reset();
+
+		// tekstura do compute shadera
+		m_CSTexture.texDesc.Width = width;
+		m_CSTexture.texDesc.Height = height;
+		m_CSTexture.texDesc.MipLevels = 1;
+		m_CSTexture.texDesc.ArraySize = 1;
+		m_CSTexture.texDesc.Usage = D3D11_USAGE_DEFAULT;
+		m_CSTexture.texDesc.CPUAccessFlags = 0;
+		m_CSTexture.texDesc.MiscFlags = 0;
+		m_CSTexture.texDesc.SampleDesc.Count = 1;
+		m_CSTexture.texDesc.SampleDesc.Quality = 0;
+		m_CSTexture.texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		m_CSTexture.texDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+
+		// tekstura, uav, srv do compute shadera
+		CHECK(m_Device.device->CreateTexture2D(&m_CSTexture.texDesc, nullptr, m_CSTexture.renderTexture.GetAddressOf()));
+		CHECK(m_Device.device->CreateUnorderedAccessView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.UAV));
+		CHECK(m_Device.device->CreateShaderResourceView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.SRV));
+
+		m_ViewPort.Width = (float)width;
+		m_ViewPort.Height = (float)height;
+		m_ViewPort.MinDepth = 0;
+		m_ViewPort.MaxDepth = 1;
+		m_ViewPort.TopLeftX = 0;
+		m_ViewPort.TopLeftY = 0;
+
+		m_Device.deviceContext->RSSetViewports(1, &m_ViewPort);
+
+		m_Width = width;
+		m_Height = height;
+
+		m_NumGroupsX = (width + workGroupSizeX - 1) / workGroupSizeX;
+		m_NumGroupsY = (height + workGroupSizeY - 1) / workGroupSizeY;
 	}
 }

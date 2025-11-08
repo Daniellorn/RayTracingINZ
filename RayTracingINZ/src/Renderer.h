@@ -42,6 +42,8 @@ namespace App {
 
 		void Draw();
 
+		void Resize(int width, int height);
+
 	private:
 		HWND m_WindowHandle;
 		int m_Width;

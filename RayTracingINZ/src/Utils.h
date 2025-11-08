@@ -37,4 +37,6 @@ namespace App {
         exit(EXIT_FAILURE);
     }
 
+    //TODO: Moze zrob konsole? 
+
 }

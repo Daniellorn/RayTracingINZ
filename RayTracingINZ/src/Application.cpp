@@ -14,7 +14,9 @@ namespace App {
 
 
 		m_WindowHandle = CreateWindowApp(m_WindowSpec);
-		m_Renderer = std::make_unique<Renderer>(m_WindowHandle, m_WindowSpec.width, m_WindowSpec.height, m_Scene);
+		m_Renderer = std::make_unique<Renderer>(m_WindowHandle, m_WindowSpec.clientWidth, m_WindowSpec.clientHeight, m_Scene);
+
+		SetWindowLongPtr(m_WindowHandle, GWLP_USERDATA, (LONG_PTR)m_Renderer.get());
 
 	}
 	void Application::Run()
@@ -25,7 +27,7 @@ namespace App {
 
 		MSG msg{};
 
-		m_Renderer->InitRenderer();
+		//m_Renderer->InitRenderer();
 
 		while (msg.message != WM_QUIT)
 		{

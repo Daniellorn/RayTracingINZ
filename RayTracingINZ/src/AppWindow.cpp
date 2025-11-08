@@ -1,34 +1,55 @@
 #include "AppWindow.h"
 
+#include "Utils.h"
+#include "Renderer.h"
+
 LRESULT CALLBACK App::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
+
+	Renderer* renderer = (Renderer*)GetWindowLongPtr(window, GWLP_USERDATA);
+
 	switch (message)
 	{
-	case WM_DESTROY:
-	{
-		OutputDebugStringA("WM_DESTROY received!\n");
-		PostQuitMessage(0);
-		break;
-	}
+		case WM_DESTROY:
+			OutputDebugStringA("WM_DESTROY received!\n");
+			PostQuitMessage(0);
+			return 0;
+		case WM_SIZE:
+		{
+			RECT clientRect = { 0 };
+			GetClientRect(window, &clientRect);
+
+			int clientWidth = clientRect.right - clientRect.left;
+			int clientHeight = clientRect.bottom - clientRect.top;
+			
+			char buffer[128];
+			sprintf_s(buffer, "Client size: %d x %d\n", clientWidth, clientHeight);
+
+			OutputDebugStringA(buffer);
+
+			if (clientWidth > 0 && clientHeight > 0)
+				renderer->Resize(clientWidth, clientHeight);
+		}break;
+
 
 	}
 
 	return DefWindowProc(window, message, wParam, lParam);
 }
 
-HWND App::CreateWindowApp(const WindowSpecification& spec)
+HWND App::CreateWindowApp(WindowSpecification& spec)
 {
 	const wchar_t* className = L"RTWINDOW";
 
-	HMODULE hInstane = GetModuleHandle(nullptr);
+	HMODULE hInstance = GetModuleHandle(nullptr);
 
-	WNDCLASSEX windowClass = {};
+	WNDCLASSEXW windowClass = {};
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_OWNDC;
 	windowClass.lpfnWndProc = WindowProc;
 	windowClass.cbClsExtra = 0;
 	windowClass.cbWndExtra = 0;
-	windowClass.hInstance = hInstane;
+	windowClass.hInstance = hInstance;
 	windowClass.hIcon = nullptr;
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.hbrBackground = nullptr;
@@ -36,12 +57,28 @@ HWND App::CreateWindowApp(const WindowSpecification& spec)
 	windowClass.lpszClassName = className;
 	windowClass.hIconSm = nullptr;
 
-	RegisterClassEx(&windowClass);
+	RegisterClassExW(&windowClass);
 
-	HWND window = CreateWindowEx(
-		0, className, L"RayTracing", WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, spec.width, spec.height,
-		nullptr, nullptr, hInstane, nullptr
+	uint32_t windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION
+		| WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+	uint32_t windowExStyle = WS_EX_APPWINDOW;
+	   
+	uint32_t windowX = 100;
+	uint32_t windowY = 100;
+
+	RECT borderRect = { 0, 0, 1280, 720 };
+	AdjustWindowRectEx(&borderRect, windowStyle, false, windowExStyle);
+
+	windowX += borderRect.left;
+	windowY += borderRect.top;
+
+	spec.windowWidth = borderRect.right - borderRect.left;
+	spec.windowHeight = borderRect.bottom - borderRect.top;
+
+	HWND window = CreateWindowExW(
+		windowExStyle, className, L"RayTracing", WS_OVERLAPPEDWINDOW,
+		windowX, windowY, spec.windowWidth, spec.windowHeight,
+		nullptr, nullptr, hInstance, nullptr
 	);
 
 	if (window == nullptr)
