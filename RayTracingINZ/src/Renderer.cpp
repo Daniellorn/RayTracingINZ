@@ -53,8 +53,24 @@ namespace App {
 		m_Device.device->CreateSamplerState(&m_CSTexture.samplerDesc, m_CSTexture.sampler.GetAddressOf());
 
 		//Tekstura do PS (blit pass)
+		m_PSTexture.texDesc.Width = m_Width;
+		m_PSTexture.texDesc.Height = m_Height;
+		m_PSTexture.texDesc.MipLevels = 1;
+		m_PSTexture.texDesc.ArraySize = 1;
+		m_PSTexture.texDesc.Usage = D3D11_USAGE_DEFAULT;
+		m_PSTexture.texDesc.CPUAccessFlags = 0;
+		m_PSTexture.texDesc.MiscFlags = 0;
+		m_PSTexture.texDesc.SampleDesc.Count = 1;
+		m_PSTexture.texDesc.SampleDesc.Quality = 0;
+		m_PSTexture.texDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+		m_PSTexture.texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+		CHECK(m_Device.device->CreateTexture2D(&m_PSTexture.texDesc, nullptr, m_PSTexture.renderTexture.GetAddressOf()));
+		CHECK(m_Device.device->CreateShaderResourceView(m_PSTexture.renderTexture.Get(), nullptr, &m_PSTexture.SRV));
+		CHECK(m_Device.device->CreateRenderTargetView(m_PSTexture.renderTexture.Get(), nullptr, &m_RenderTarget));
+
 		m_Swapchain.swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(m_BackbufferTexture.GetAddressOf()));
-		CHECK(m_Device.device->CreateRenderTargetView(m_BackbufferTexture.Get(), nullptr, &m_RenderTarget));
+		CHECK(m_Device.device->CreateRenderTargetView(m_BackbufferTexture.Get(), nullptr, &m_BackBufferRenderTarget));
 
 
 		auto spheres = m_Scene.GetSpheres();
@@ -115,6 +131,9 @@ namespace App {
 	}
 	void Renderer::EndFrame()
 	{
+		//m_Device.deviceContext->OMSetRenderTargets(1, m_BackBufferRenderTarget.GetAddressOf(), nullptr);
+		//m_Device.deviceContext->ClearRenderTargetView(m_BackBufferRenderTarget.Get(), DirectX::Colors::DarkGray);
+		//m_Device.deviceContext->CopyResource(m_BackbufferTexture.Get(), m_PSTexture.renderTexture.Get());
 		m_Swapchain.swapchain->Present(1u, 0u);
 	}
 	void Renderer::Draw()
@@ -147,6 +166,15 @@ namespace App {
 		m_PS.Bind(m_Device.deviceContext.Get());
 
 		m_Device.deviceContext->Draw(3, 0);
+
+		ID3D11RenderTargetView* nullRTV = nullptr;
+		m_Device.deviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
+		ID3D11ShaderResourceView* const pSRV[1] = { NULL };
+		m_Device.deviceContext->PSSetShaderResources(0, 1, pSRV);
+
+		m_Device.deviceContext->OMSetRenderTargets(1, m_BackBufferRenderTarget.GetAddressOf(), nullptr);
+		//m_Device.deviceContext->ClearRenderTargetView(m_BackBufferRenderTarget.Get(), DirectX::Colors::DarkGray);
+
 	}
 	void Renderer::Resize(int width, int height)
 	{
@@ -154,35 +182,37 @@ namespace App {
 		m_Device.deviceContext->Flush();
 
 		m_RenderTarget.Reset();
+		m_BackBufferRenderTarget.Reset();
 		m_BackbufferTexture.Reset();
-		m_Swapchain.swapchain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+		m_Swapchain.swapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 
 		CHECK(m_Swapchain.swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D),
 			reinterpret_cast<void**>(m_BackbufferTexture.GetAddressOf())));
-
-		CHECK(m_Device.device->CreateRenderTargetView(m_BackbufferTexture.Get(), nullptr, &m_RenderTarget));
+		CHECK(m_Device.device->CreateRenderTargetView(m_BackbufferTexture.Get(), nullptr, &m_BackBufferRenderTarget));
 
 		m_CSTexture.UAV.Reset();
 		m_CSTexture.SRV.Reset();
 		m_CSTexture.renderTexture.Reset();
 
+		m_PSTexture.renderTexture.Reset();
+		m_PSTexture.SRV.Reset();
+
 		// tekstura do compute shadera
 		m_CSTexture.texDesc.Width = width;
 		m_CSTexture.texDesc.Height = height;
-		m_CSTexture.texDesc.MipLevels = 1;
-		m_CSTexture.texDesc.ArraySize = 1;
-		m_CSTexture.texDesc.Usage = D3D11_USAGE_DEFAULT;
-		m_CSTexture.texDesc.CPUAccessFlags = 0;
-		m_CSTexture.texDesc.MiscFlags = 0;
-		m_CSTexture.texDesc.SampleDesc.Count = 1;
-		m_CSTexture.texDesc.SampleDesc.Quality = 0;
-		m_CSTexture.texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		m_CSTexture.texDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+
+		m_PSTexture.texDesc.Width = width;
+		m_PSTexture.texDesc.Height = height;
 
 		// tekstura, uav, srv do compute shadera
 		CHECK(m_Device.device->CreateTexture2D(&m_CSTexture.texDesc, nullptr, m_CSTexture.renderTexture.GetAddressOf()));
 		CHECK(m_Device.device->CreateUnorderedAccessView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.UAV));
 		CHECK(m_Device.device->CreateShaderResourceView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.SRV));
+
+		//PS tekstura
+		CHECK(m_Device.device->CreateTexture2D(&m_PSTexture.texDesc, nullptr, m_PSTexture.renderTexture.GetAddressOf()));
+		CHECK(m_Device.device->CreateShaderResourceView(m_PSTexture.renderTexture.Get(), nullptr, &m_PSTexture.SRV));
+		CHECK(m_Device.device->CreateRenderTargetView(m_PSTexture.renderTexture.Get(), nullptr, &m_RenderTarget));
 
 		m_ViewPort.Width = (float)width;
 		m_ViewPort.Height = (float)height;
@@ -192,11 +222,17 @@ namespace App {
 		m_ViewPort.TopLeftY = 0;
 
 		m_Device.deviceContext->RSSetViewports(1, &m_ViewPort);
+		m_Device.deviceContext->OMSetRenderTargets(1, m_RenderTarget.GetAddressOf(), nullptr);
 
 		m_Width = width;
 		m_Height = height;
 
 		m_NumGroupsX = (width + workGroupSizeX - 1) / workGroupSizeX;
 		m_NumGroupsY = (height + workGroupSizeY - 1) / workGroupSizeY;
+	}
+	void Renderer::UpdateSceneBuffers(Scene& scene)
+	{
+		m_SpheresBuffer.Update(m_Device.deviceContext.Get(), scene.GetSpheres());
+		m_MaterialsBuffer.Update(m_Device.deviceContext.Get(), scene.GetMaterials());
 	}
 }

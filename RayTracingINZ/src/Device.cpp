@@ -32,12 +32,12 @@ namespace App {
 		result.swapchainParams.Stereo = false;
 		result.swapchainParams.SampleDesc.Quality = 0;
 		result.swapchainParams.SampleDesc.Count = 1;
-		result.swapchainParams.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		result.swapchainParams.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
 		result.swapchainParams.BufferCount = 2;
 		result.swapchainParams.Scaling = DXGI_SCALING_NONE;
 		result.swapchainParams.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		result.swapchainParams.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		result.swapchainParams.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;;
+		result.swapchainParams.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 		ComPtr< IDXGIFactory6> factory6;
 		ComPtr<IDXGISwapChain1> tempSwapChain;

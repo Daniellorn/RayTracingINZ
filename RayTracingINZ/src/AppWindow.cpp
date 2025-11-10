@@ -20,17 +20,17 @@ LRESULT CALLBACK App::WindowProc(HWND window, UINT message, WPARAM wParam, LPARA
 			OutputDebugStringA("WM_DESTROY received!\n");
 			PostQuitMessage(0);
 			return 0;
-		case WM_SIZE:
-		{
-			RECT clientRect = { 0 };
-			GetClientRect(window, &clientRect);
-
-			int clientWidth = clientRect.right - clientRect.left;
-			int clientHeight = clientRect.bottom - clientRect.top;
-
-			if (clientWidth > 0 && clientHeight > 0)
-				renderer->Resize(clientWidth, clientHeight);
-		}break;
+		//case WM_SIZE:
+		//{
+		//	RECT clientRect = { 0 };
+		//	GetClientRect(window, &clientRect);
+		//	
+		//	int clientWidth = clientRect.right - clientRect.left;
+		//	int clientHeight = clientRect.bottom - clientRect.top;
+		//	
+		//	if (clientWidth > 0 && clientHeight > 0)
+		//		renderer->Resize(clientWidth, clientHeight);
+		//}break;
 
 
 	}

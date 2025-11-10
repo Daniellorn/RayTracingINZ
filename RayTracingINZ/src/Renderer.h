@@ -45,6 +45,9 @@ namespace App {
 		void Resize(int width, int height);
 
 		Device& GetDevice() { return m_Device; }
+		Texture& GetPSTexture() { return m_PSTexture; }
+
+		void UpdateSceneBuffers(Scene& scene);
 
 	private:
 		HWND m_WindowHandle;
@@ -54,6 +57,7 @@ namespace App {
 		Device m_Device;
 		Swapchain m_Swapchain;
 		Texture m_CSTexture;
+		Texture m_PSTexture;
 		VertexShader m_VS;
 		PixelShader m_PS;
 		ComputeShader m_CS;
@@ -61,6 +65,7 @@ namespace App {
 
 		Microsoft::WRL::ComPtr< ID3D11Texture2D> m_BackbufferTexture;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTarget;
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_BackBufferRenderTarget;
 
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
 		D3D11_BUFFER_DESC m_VertexBufferConfig;

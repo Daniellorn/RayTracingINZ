@@ -6,6 +6,8 @@
 #include "Renderer.h"
 #include "Scene.h"
 
+#include <DirectXMath.h>
+
 
 namespace App {
 
@@ -17,6 +19,7 @@ namespace App {
 
 		void Init();
 		void Run();
+		void Close();
 
 	private:
 
@@ -24,8 +27,11 @@ namespace App {
 		WindowSpecification m_WindowSpec;
 
 		std::unique_ptr<Renderer> m_Renderer;
+		DirectX::XMFLOAT2 m_ViewportSize;
 
 		Scene m_Scene;
+
+		bool m_Running;
 	};
 }
 

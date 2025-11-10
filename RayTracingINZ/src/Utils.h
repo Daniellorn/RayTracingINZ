@@ -9,6 +9,7 @@ namespace App {
 
 #define CHECK(hr) errorBox(hr, __LINE__, __FILE__);
 
+    //TODO: DO ZMIANY
     inline void errorBox(HRESULT hr, int lineNumber, const char* fileName)
     {
 
