@@ -1,6 +1,13 @@
 static const float MAX_FLOAT = 100000;
 static const int MAX_OBJ = 100;
 
+cbuffer CameraBuffer : register(b0)
+{
+    float4x4 invProjectionMartix;
+    float4x4 invViewMatrix;
+    float3 cameraPosition;
+};
+
 struct Ray
 {
     float3 origin;
@@ -102,7 +109,7 @@ HitInfo CheckIntersection(Ray ray)
     info.objectIndex = -1.0;
    
     
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 3; i++)
     {
         float t = SphereIntersection(ray, g_Spheres[i]);
         
@@ -144,7 +151,7 @@ float3 TraceRay(Ray ray)
         return float3(lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), a));
     }
     
-    color = sphereMaterial.albedo;
+    color = info.normal * 0.5 + 0.5;
     
     return color;
 }
@@ -165,17 +172,20 @@ void main( uint3 DTid : SV_DispatchThreadID )
     float aspectRatio = texSize.x / texSize.y;
     
     normalizedCord = normalizedCord * 2.0f - 1.0f;
+    normalizedCord *= aspectRatio;
     
-    //normalizedCord.y = 1.0f - normalizedCord.y;
-    normalizedCord.x *= aspectRatio;
-
+    float4 clip = float4(normalizedCord, 1.0f, 1.0f);
+    float4 target = mul(invProjectionMartix, clip);
+    target.xyz /= target.w;
+    
+    float4 worldDir4 = mul(invViewMatrix, float4(target.xyz, 0.0f));
+    float3 worldDir = normalize(worldDir4.xyz);
+    
     Ray ray;
-    ray.origin = float3(0.0, 0.0, -2.0);
-    ray.direction = normalize(float3(normalizedCord.x, normalizedCord.y, 1.0));
+    ray.origin = cameraPosition;
+    ray.direction = worldDir;
       
     float3 color = TraceRay(ray);
-    
-    //outputTex[pixel] = float4(1.0f - normalizedCord.x, normalizedCord.x, 0.0f, 1.0f);
 
     outputTex[pixel] = float4(color, 1.0);
 }

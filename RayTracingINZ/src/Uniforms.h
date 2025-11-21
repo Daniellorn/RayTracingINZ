@@ -30,7 +30,7 @@ namespace App {
 			constantBufferData.SysMemPitch = 0;
 			constantBufferData.SysMemSlicePitch = 0;
 
-			CHECK(device->CreateBuffer(&m_ConstantBufferConfig, &constantBufferData, &m_ConstantBuffer.GetAddressOf()));
+			CHECK(device->CreateBuffer(&m_ConstantBufferConfig, &constantBufferData, &m_ConstantBuffer));
 		}
 
 		void BindPS(ID3D11DeviceContext* deviceContext, const T& data, uint32_t slot)

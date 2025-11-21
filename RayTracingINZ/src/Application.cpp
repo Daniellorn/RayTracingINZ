@@ -1,25 +1,48 @@
 #include "Application.h"
 #include <DirectXMath.h>
+#include <Windows.h>
 
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include <Windows.h>
-
-#define KEY_PRESSED(vk_code) (GetAsyncKeyState(vk_code) & 0x8000)
+#include "Camera.h"
 
 using namespace DirectX;
 
 namespace App {
 
+    //TODO: DO ZMIANY NA KLASE TIMER 
+    float GetDeltaTime()
+    {
+        static LARGE_INTEGER frequency;
+        static LARGE_INTEGER lastTime;
+        static bool initialized = false;
+
+        if (!initialized)
+        {
+            QueryPerformanceFrequency(&frequency);
+            QueryPerformanceCounter(&lastTime);
+            initialized = true;
+            return 0.0f;
+        }
+
+        LARGE_INTEGER currentTime;
+        QueryPerformanceCounter(&currentTime);
+
+        float delta = static_cast<float>(currentTime.QuadPart - lastTime.QuadPart) / frequency.QuadPart;
+        lastTime = currentTime;
+
+        return delta;
+    }
+
 	void Application::Init() 
 	{
 		m_Scene.AddObject(Sphere(0.0f, 1.0f, 0.0f, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
 		m_Scene.AddObject(Sphere(0.0f, -1.0f, 0.0f, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
+		m_Scene.AddObject(Sphere(0.0f, -5.0f, 0.0f, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
 		m_Scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 1.0f));
 		m_Scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 1.0f));
-
 
 		m_WindowHandle = CreateWindowApp(m_WindowSpec);
 		m_Renderer = std::make_unique<Renderer>(m_WindowHandle, m_WindowSpec.clientWidth, m_WindowSpec.clientHeight, m_Scene);
@@ -39,6 +62,9 @@ namespace App {
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+
+        Camera camera(m_WindowHandle, 45.0f, 0.1f, 100.0f, m_WindowSpec.clientWidth, m_WindowSpec.clientHeight);
+        m_Renderer->InitRenderer(camera);
 		auto device = m_Renderer->GetDevice();
 
 		// Setup Platform/Renderer backends
@@ -49,8 +75,6 @@ namespace App {
 
 		MSG msg{};
 
-		//m_Renderer->InitRenderer();
-
 
         static bool opt_fullscreen = true;
         static bool opt_padding = false;
@@ -60,102 +84,113 @@ namespace App {
         //TODO: Jakis warning jest
 		while (msg.message != WM_QUIT)
 		{
+            Timer timer;
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-
-
-			ImGui_ImplDX11_NewFrame();
-			ImGui_ImplWin32_NewFrame();
-			ImGui::NewFrame();
-			ImGui::ShowDemoWindow();
-
-            m_Renderer->ClearBuffer();
-            m_Renderer->Draw();
-
-            ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-            if (opt_fullscreen)
-            {
-                const ImGuiViewport* viewport = ImGui::GetMainViewport();
-                ImGui::SetNextWindowPos(viewport->WorkPos);
-                ImGui::SetNextWindowSize(viewport->WorkSize);
-                ImGui::SetNextWindowViewport(viewport->ID);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-                window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-            }
             else
             {
-                dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-            }
+                float ts = GetDeltaTime();
 
-            if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-                window_flags |= ImGuiWindowFlags_NoBackground;
-            if (!opt_padding)
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+			    ImGui_ImplDX11_NewFrame();
+			    ImGui_ImplWin32_NewFrame();
+			    ImGui::NewFrame();
+			    //ImGui::ShowDemoWindow();
 
+                m_Renderer->ClearBuffer();
+                m_Renderer->Draw(ts);
 
-            ImGui::Begin("DockSpace Demo", &dockSpaceOpen, window_flags);
-            if (!opt_padding)
-                ImGui::PopStyleVar();
-
-            if (opt_fullscreen)
-                ImGui::PopStyleVar(2);
-
-            if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-            {
-                ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-                ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-            }
-
-            if (ImGui::BeginMenuBar())
-            {
-                if (ImGui::BeginMenu("Options"))
+                ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+                if (opt_fullscreen)
                 {
-
-                    if (ImGui::MenuItem("Exit"))
-                    {
-                        Close();
-                    }
-                    ImGui::EndMenu();
+                    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+                    ImGui::SetNextWindowPos(viewport->WorkPos);
+                    ImGui::SetNextWindowSize(viewport->WorkSize);
+                    ImGui::SetNextWindowViewport(viewport->ID);
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+                    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
                 }
-                ImGui::EndMenuBar();
-            }
-			//ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Viewport");
+                else
+                {
+                    dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+                }
+
+                if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+                    window_flags |= ImGuiWindowFlags_NoBackground;
+                if (!opt_padding)
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+
+                ImGui::Begin("DockSpace Demo", &dockSpaceOpen, window_flags);
+                if (!opt_padding)
+                    ImGui::PopStyleVar();
+
+                if (opt_fullscreen)
+                    ImGui::PopStyleVar(2);
+
+                if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+                {
+                    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+                    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+                }
+
+                if (ImGui::BeginMenuBar())
+                {
+                    if (ImGui::BeginMenu("Options"))
+                    {
+
+                        if (ImGui::MenuItem("Exit"))
+                        {
+                            Close();
+                        }
+                        ImGui::EndMenu();
+                    }
+                    ImGui::EndMenuBar();
+                }
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+                ImGui::Begin("Viewport");
 			
-            ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-			if (viewportPanelSize.x > 0 && viewportPanelSize.y > 0 &&
-                (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y))
-			{
+                ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+			    if (viewportPanelSize.x > 0 && viewportPanelSize.y > 0 &&
+                    (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y))
+			    {
 
-			    m_Renderer->Resize((int)viewportPanelSize.x, (int)viewportPanelSize.y);
-			    m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-			}
-			auto textureID = m_Renderer->GetPSTexture();
-			ImGui::Image((ImTextureID)textureID.SRV.Get(), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
+			        m_Renderer->Resize((int)viewportPanelSize.x, (int)viewportPanelSize.y);
+                    camera.OnResize(viewportPanelSize.x, viewportPanelSize.y);
+			        m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+			    }
+			    auto textureID = m_Renderer->GetPSTexture();
+			    ImGui::Image((ImTextureID)textureID.SRV.Get(), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
 			
-            ImGui::End();
+                ImGui::PopStyleVar();
+                ImGui::End();
 
-            ImGui::Begin("Settings");
-            ImGui::End();
+                ImGui::Begin("Settings");
+                ImGui::Text("Last render: %.3fms", m_LastRenderTime);
+                ImGui::End();
 
-            ImGui::End();
+                ImGui::End();
             
-			ImGui::Render();
+			    ImGui::Render();
 
-			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+			    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
-				ImGui::UpdatePlatformWindows();
-				ImGui::RenderPlatformWindowsDefault();
-			}
+			    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			    {
+				    ImGui::UpdatePlatformWindows();
+				    ImGui::RenderPlatformWindowsDefault();
+			    }
 
-			m_Renderer->EndFrame();
+			    m_Renderer->EndFrame();
+
+                m_LastRenderTime = timer.ElapsedTime();
+            }
+
+
 
 		}
 

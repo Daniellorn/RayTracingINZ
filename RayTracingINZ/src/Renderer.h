@@ -10,6 +10,7 @@
 #include "Shader.h"
 #include "Scene.h"
 #include "Uniforms.h"
+#include "Camera.h"
 
 namespace App {
 
@@ -27,6 +28,13 @@ namespace App {
 
 	};
 
+	struct alignas(16) CameraBuffer
+	{
+		DirectX::XMFLOAT4X4 invProjectionMartix;
+		DirectX::XMFLOAT4X4 invViewMatrix;
+		DirectX::XMFLOAT3 cameraPosition;
+	};
+
 	class Renderer
 	{
 	public:
@@ -35,12 +43,12 @@ namespace App {
 
 		~Renderer() = default;
 
-		void InitRenderer();
+		void InitRenderer(Camera& camera);
 		void OnRender();
 		void ClearBuffer();
 		void EndFrame();
 
-		void Draw();
+		void Draw(float ts);
 
 		void Resize(int width, int height);
 
@@ -70,8 +78,12 @@ namespace App {
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
 		D3D11_BUFFER_DESC m_VertexBufferConfig;
 
+		CameraBuffer m_CameraBuffer;
 		Scene m_Scene;
+		Camera* m_Camera = nullptr;
 
+
+		ConstantBuffer<CameraBuffer> m_CameraConstantBuffer;
 		StructuredBuffer<Sphere> m_SpheresBuffer;
 		StructuredBuffer<Material> m_MaterialsBuffer;
 
