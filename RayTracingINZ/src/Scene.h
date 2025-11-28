@@ -44,12 +44,17 @@ namespace App {
 		float intensity;
 	};
 
+	struct SceneConfiguration
+	{
+		int numOfSpheres;
+		int numOfBounces;
+	};
 
 	class Scene
 	{
 	public:
 
-		Scene() = default;
+		Scene(const SceneConfiguration& sceneConfiguration) : m_SceneConfiguration(sceneConfiguration) {};
 		~Scene() = default;
 
 		void AddObject(const Sphere& sphere);
@@ -57,12 +62,12 @@ namespace App {
 
 		std::vector<Sphere>& GetSpheres() { return m_Objects; }
 		std::vector<Material>& GetMaterials() { return m_Materials; }
+		SceneConfiguration& GetSceneConfiguration() { return m_SceneConfiguration; }
 
 	private:
 		std::vector<Sphere> m_Objects;
 		std::vector<Material> m_Materials;
 
-		int m_Bounces = 5;
-
+		SceneConfiguration m_SceneConfiguration;
 	};
 }

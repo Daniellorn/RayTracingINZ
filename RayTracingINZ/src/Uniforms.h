@@ -80,7 +80,7 @@ namespace App {
 
 		StructuredBuffer(ID3D11Device* device, const std::vector<T>& data) : m_Data(data)
 		{
-			m_StructuredBufferConfig.ByteWidth = sizeof(T) * data.size();
+			m_StructuredBufferConfig.ByteWidth = sizeof(T) * (UINT)data.size();
 			m_StructuredBufferConfig.Usage = D3D11_USAGE_DYNAMIC;
 			m_StructuredBufferConfig.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 			m_StructuredBufferConfig.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -99,7 +99,7 @@ namespace App {
 			srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
 			srvDesc.Buffer.FirstElement = 0;
-			srvDesc.Buffer.NumElements = data.size();
+			srvDesc.Buffer.NumElements = (UINT)data.size();
 
 			CHECK(device->CreateShaderResourceView(m_StructuredBuffer.Get(), &srvDesc, m_SRV.GetAddressOf()));
 

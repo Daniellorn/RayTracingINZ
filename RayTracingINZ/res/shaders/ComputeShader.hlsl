@@ -1,5 +1,4 @@
-static const float MAX_FLOAT = 100000;
-static const int MAX_OBJ = 100;
+#include "Utils.hlsli"
 
 cbuffer CameraBuffer : register(b0)
 {
@@ -7,6 +6,18 @@ cbuffer CameraBuffer : register(b0)
     float4x4 invViewMatrix;
     float3 cameraPosition;
 };
+
+cbuffer SceneConfiguration : register(b1)
+{
+    int numOfSpheres;
+    int numOfBounce;
+}
+
+cbuffer RenderData : register(b2)
+{
+    uint frameIndex;
+    uint raysPerPixel;
+}
 
 struct Ray
 {
@@ -53,6 +64,13 @@ float3 RayAt(Ray ray, float t)
     return ray.direction * t + ray.origin;
 }
 
+float3 GetEmission(Material material)
+{
+    float4 result = material.EmissionColor * material.EmissionPower;
+
+    return float3(result.x, result.y, result.z);
+}
+
 float SphereIntersection(Ray ray, Sphere sphere)
 {
     float3 spherePosition = float3(sphere.x, sphere.y, sphere.z);
@@ -62,40 +80,40 @@ float SphereIntersection(Ray ray, Sphere sphere)
     float b = 2.0 * dot(ray.direction, oc);
     float c = dot(oc, oc) - sphere.radius * sphere.radius;
     
-    float discriminant = b * b - 4.0 * a * c;
+    float discriminant = b * b - 4.0f * a * c;
     
-    if (discriminant < 0.0)
+    if (discriminant < 0.0f)
     {
-        return -1.0;
+        return -1.0f;
     }
     
-    float t1 = (-b - sqrt(discriminant)) / (2.0 * a);
-    float t2 = (-b + sqrt(discriminant)) / (2.0 * a);
+    float t1 = (-b - sqrt(discriminant)) / (2.0f * a);
+    float t2 = (-b + sqrt(discriminant)) / (2.0f * a);
     
-    if (t1 > 0.0 && t2 > 0.0)
+    if (t1 > 0.0f && t2 > 0.0f)
     {
         return min(t1, t2);
     }
-    else if (t1 > 0.0)
+    else if (t1 > 0.0f)
     {
         return t1;
     }
-    else if (t2 > 0.0)
+    else if (t2 > 0.0f)
     {
         return t2;
     }
     else
     {
-        return -1.0;
+        return -1.0f;
     }
 }
 
 HitInfo Miss()
 {
-    HitInfo info;
-    info.hitDistance = -1.0;
-    info.hitPoint = float3(-1.0, -1.0, -1.0);
-    info.normal = float3(0.0, 0.0, 0.0);
+    HitInfo info = (HitInfo)0;
+    info.hitDistance = -1.0f;
+    info.hitPoint = float3(-1.0f, -1.0f, -1.0f);
+    info.normal = float3(0.0f, 0.0f, 0.0f);
     info.t = 0.0;
     
     return info;
@@ -109,7 +127,7 @@ HitInfo CheckIntersection(Ray ray)
     info.objectIndex = -1.0;
    
     
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < numOfSpheres; i++)
     {
         float t = SphereIntersection(ray, g_Spheres[i]);
         
@@ -133,27 +151,42 @@ HitInfo CheckIntersection(Ray ray)
     {
         info = Miss();
     }
-
+    
     return info;
 }
 
-float3 TraceRay(Ray ray)
+float3 TraceRay(Ray ray, inout uint seed)
 {
-    float3 color;
+    float3 light = float3(0.0f, 0.0f, 0.0f);
+    float3 contribution = float3(1.0f, 1.0f, 1.0f);
     
-    HitInfo info = CheckIntersection(ray);
-    Material sphereMaterial = g_Materials[info.materialIndex];
-    
-    if (info.hitDistance < 0.0)
+    for (int i = 0; i < numOfBounce; i++)
     {
-        float3 unitDir = normalize(ray.direction);
-        float a = 0.5 * (unitDir.y + 1.0f);
-        return float3(lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), a));
+        HitInfo info = CheckIntersection(ray);
+        
+        if (info.hitDistance < 0.0f)
+        {
+            break;
+            float3 unitDir = normalize(ray.direction);
+            float a = 0.5 * (unitDir.y + 1.0f);
+            return float3(lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), a));
+        }
+        
+        Sphere closestSphere = g_Spheres[info.objectIndex];
+        Material sphereMaterial = g_Materials[info.materialIndex];
+        
+        light += GetEmission(sphereMaterial) * contribution;
+        
+        ray.origin = info.hitPoint + info.normal * EPSILON;
+        
+        float3 diffuseDir = normalize(RandomVec3OnUnitHemiSphere(seed, info.normal));
+        
+        ray.direction = diffuseDir;
+        contribution *= sphereMaterial.albedo.xyz;
+        
     }
     
-    color = info.normal * 0.5 + 0.5;
-    
-    return color;
+    return light;
 }
 
 [numthreads(16, 16, 1)]
@@ -166,6 +199,9 @@ void main( uint3 DTid : SV_DispatchThreadID )
     
     if (pixel.x >= width || pixel.y >= height)
         return;
+    
+    uint seed = pixel.x + pixel.y * width;
+    seed *= frameIndex;
     
     float2 texSize = float2(width, height);
     float2 normalizedCord = float2(pixel) / float2(texSize);
@@ -185,7 +221,14 @@ void main( uint3 DTid : SV_DispatchThreadID )
     ray.origin = cameraPosition;
     ray.direction = worldDir;
       
-    float3 color = TraceRay(ray);
+    float3 totalColor = float3(0.0f, 0.0f, 0.0f);
+    
+    for (int i = 0; i < int(raysPerPixel); i++)
+    {
+        totalColor += TraceRay(ray, seed);
+    }
 
-    outputTex[pixel] = float4(color, 1.0);
+    float3 finalColor = totalColor.xyz / float(raysPerPixel);
+    
+    outputTex[pixel] = float4(finalColor, 1.0f);
 }

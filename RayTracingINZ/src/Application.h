@@ -33,7 +33,6 @@ namespace App {
 		std::unique_ptr<Renderer> m_Renderer;
 		DirectX::XMFLOAT2 m_ViewportSize;
 
-		Scene m_Scene;
 		Timer m_Timer;
 
 		bool m_Running;

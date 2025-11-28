@@ -35,15 +35,21 @@ namespace App {
 		DirectX::XMFLOAT3 cameraPosition;
 	};
 
+	struct RenderData
+	{
+		uint32_t frameIndex = 1;
+		uint32_t raysPerPixel = 20;
+	};
+
 	class Renderer
 	{
 	public:
 
-		Renderer(HWND handle, int width, int height, Scene scene);
+		Renderer(HWND handle, int width, int height);
 
 		~Renderer() = default;
 
-		void InitRenderer(Camera& camera);
+		void InitRenderer(Camera& camera, Scene& scene);
 		void OnRender();
 		void ClearBuffer();
 		void EndFrame();
@@ -61,6 +67,7 @@ namespace App {
 		HWND m_WindowHandle;
 		int m_Width;
 		int m_Height;
+		inline static uint32_t s_FrameIndex = 1;
 
 		Device m_Device;
 		Swapchain m_Swapchain;
@@ -79,11 +86,13 @@ namespace App {
 		D3D11_BUFFER_DESC m_VertexBufferConfig;
 
 		CameraBuffer m_CameraBuffer;
-		Scene m_Scene;
 		Camera* m_Camera = nullptr;
-
+		Scene* m_Scene = nullptr;
+		
 
 		ConstantBuffer<CameraBuffer> m_CameraConstantBuffer;
+		ConstantBuffer<RenderData> m_RenderDataBuffer;
+		ConstantBuffer<SceneConfiguration> m_SceneConfigurationBuffer;
 		StructuredBuffer<Sphere> m_SpheresBuffer;
 		StructuredBuffer<Material> m_MaterialsBuffer;
 

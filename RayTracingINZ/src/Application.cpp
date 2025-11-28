@@ -1,6 +1,7 @@
 #include "Application.h"
 #include <DirectXMath.h>
 #include <Windows.h>
+#include <algorithm>
 
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
@@ -12,7 +13,6 @@ using namespace DirectX;
 
 namespace App {
 
-    //TODO: DO ZMIANY NA KLASE TIMER 
     float GetDeltaTime()
     {
         static LARGE_INTEGER frequency;
@@ -33,19 +33,16 @@ namespace App {
         float delta = static_cast<float>(currentTime.QuadPart - lastTime.QuadPart) / frequency.QuadPart;
         lastTime = currentTime;
 
+        delta = std::min<float>(delta, 0.0333f);
+
         return delta;
     }
 
 	void Application::Init() 
 	{
-		m_Scene.AddObject(Sphere(0.0f, 1.0f, 0.0f, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
-		m_Scene.AddObject(Sphere(0.0f, -1.0f, 0.0f, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
-		m_Scene.AddObject(Sphere(0.0f, -5.0f, 0.0f, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
-		m_Scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 1.0f));
-		m_Scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 1.0f));
 
 		m_WindowHandle = CreateWindowApp(m_WindowSpec);
-		m_Renderer = std::make_unique<Renderer>(m_WindowHandle, m_WindowSpec.clientWidth, m_WindowSpec.clientHeight, m_Scene);
+		m_Renderer = std::make_unique<Renderer>(m_WindowHandle, m_WindowSpec.clientWidth, m_WindowSpec.clientHeight);
 
 		SetWindowLongPtr(m_WindowHandle, GWLP_USERDATA, (LONG_PTR)m_Renderer.get());
 
@@ -53,6 +50,14 @@ namespace App {
 	void Application::Run()
 	{
 		Init();
+
+        Scene scene({ 20, 5 });
+		scene.AddObject(Sphere(0.0f, 1.0f, 0.0f, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
+		scene.AddObject(Sphere(0.0f, -1.0f, 0.0f, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
+		scene.AddObject(Sphere(5.0f, 0.0f, 0.0f, 4.0f, 2, static_cast<int>(Model::DIFFUSE)));
+		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
+		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
+		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 0.5f, 0.2f, 0.0f), 1.0f, 0.0f, 400.0f));
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -64,7 +69,7 @@ namespace App {
 
 
         Camera camera(m_WindowHandle, 45.0f, 0.1f, 100.0f, m_WindowSpec.clientWidth, m_WindowSpec.clientHeight);
-        m_Renderer->InitRenderer(camera);
+        m_Renderer->InitRenderer(camera, scene);
 		auto device = m_Renderer->GetDevice();
 
 		// Setup Platform/Renderer backends
@@ -160,7 +165,7 @@ namespace App {
 			    {
 
 			        m_Renderer->Resize((int)viewportPanelSize.x, (int)viewportPanelSize.y);
-                    camera.OnResize(viewportPanelSize.x, viewportPanelSize.y);
+                    camera.OnResize((int)viewportPanelSize.x, (int)viewportPanelSize.y);
 			        m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 			    }
 			    auto textureID = m_Renderer->GetPSTexture();

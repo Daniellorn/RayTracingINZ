@@ -5,9 +5,9 @@
 
 
 namespace App {
-	
-	Renderer::Renderer(HWND handle, int width, int height, Scene scene) : m_WindowHandle(handle), m_Width(width),
-		m_Height(height), m_Scene(scene)
+
+	Renderer::Renderer(HWND handle, int width, int height) : m_WindowHandle(handle), m_Width(width),
+		m_Height(height)
 	{
 		m_NumGroupsX = (m_Width + workGroupSizeX - 1) / workGroupSizeX;
 		m_NumGroupsY = (m_Height + workGroupSizeY - 1) / workGroupSizeY;
@@ -15,7 +15,7 @@ namespace App {
 		//InitRenderer();
 	}
 
-	void Renderer::InitRenderer(Camera& camera)
+	void Renderer::InitRenderer(Camera& camera, Scene& scene)
 	{
 		m_Device = CreateDevice();
 		m_Swapchain = CreateSwapchain(m_WindowHandle, m_Device.device, m_Device.factory, m_Width, m_Height);
@@ -73,9 +73,10 @@ namespace App {
 		CHECK(m_Device.device->CreateRenderTargetView(m_BackbufferTexture.Get(), nullptr, &m_BackBufferRenderTarget));
 
 		m_Camera = &camera;
+		m_Scene = &scene;
 
-		auto spheres = m_Scene.GetSpheres();
-		auto materials = m_Scene.GetMaterials();
+		auto& spheres = scene.GetSpheres();
+		auto& materials = scene.GetMaterials();
 
 		m_CameraBuffer.cameraPosition = m_Camera->GetPosition();
 		m_CameraBuffer.invProjectionMartix = m_Camera->GetInverseProjection();
@@ -84,7 +85,8 @@ namespace App {
 		m_CameraConstantBuffer = ConstantBuffer <CameraBuffer>(m_Device.device.Get(), m_CameraBuffer);
 		m_SpheresBuffer = StructuredBuffer<Sphere>(m_Device.device.Get(), spheres);
 		m_MaterialsBuffer = StructuredBuffer<Material>(m_Device.device.Get(), materials);
-
+		m_SceneConfigurationBuffer = ConstantBuffer<SceneConfiguration>(m_Device.device.Get(), m_Scene->GetSceneConfiguration());
+		m_RenderDataBuffer = ConstantBuffer<RenderData>(m_Device.device.Get(), RenderData{ .frameIndex = s_FrameIndex });
 
 		OnRender();
 
@@ -142,14 +144,11 @@ namespace App {
 	void Renderer::Draw(float ts)
 	{
 		bool cameraMoved = m_Camera->OnUpdate(ts);
+		s_FrameIndex++;
 
-		const auto& cameraPosition = m_Camera->GetPosition();
-		const auto& inverseProjection = m_Camera->GetInverseProjection();
-		const auto& inverseView = m_Camera->GetInverseView();
-
-		m_CameraBuffer.cameraPosition = cameraPosition;
-		m_CameraBuffer.invProjectionMartix = inverseProjection;
-		m_CameraBuffer.invViewMatrix = inverseView;
+		m_CameraBuffer.cameraPosition = m_Camera->GetPosition();
+		m_CameraBuffer.invProjectionMartix = m_Camera->GetInverseProjection();
+		m_CameraBuffer.invViewMatrix = m_Camera->GetInverseView();
 
 		ID3D11ShaderResourceView* nullSRV = nullptr;
 		m_Device.deviceContext->PSSetShaderResources(0, 1, &nullSRV);
@@ -157,6 +156,8 @@ namespace App {
 		m_SpheresBuffer.BindCS(m_Device.deviceContext.Get(), 0);
 		m_MaterialsBuffer.BindCS(m_Device.deviceContext.Get(), 1);
 		m_CameraConstantBuffer.BindCS(m_Device.deviceContext.Get(), m_CameraBuffer, 0);
+		m_SceneConfigurationBuffer.BindCS(m_Device.deviceContext.Get(), m_Scene->GetSceneConfiguration(), 1);
+		m_RenderDataBuffer.BindCS(m_Device.deviceContext.Get(), { .frameIndex = s_FrameIndex }, 2);
 
 		const UINT stride = sizeof(Vertex);
 		const UINT offset = 0;
