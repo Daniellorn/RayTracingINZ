@@ -37,7 +37,7 @@ struct HitInfo
 
 struct Sphere
 {
-    float x, y, z;
+    float4 position;
     float radius;
 
     int materialIndex;
@@ -73,7 +73,7 @@ float3 GetEmission(Material material)
 
 float SphereIntersection(Ray ray, Sphere sphere)
 {
-    float3 spherePosition = float3(sphere.x, sphere.y, sphere.z);
+    float3 spherePosition = float3(sphere.position.xyz);
     float3 oc = ray.origin - spherePosition;
     
     float a = 1; //dot(ray.direction, ray.direction);
@@ -141,7 +141,7 @@ HitInfo CheckIntersection(Ray ray)
             info.hitDistance = t;
             info.t = t;
             info.hitPoint = RayAt(ray, t);
-            info.normal = normalize(info.hitPoint - float3(g_Spheres[i].x, g_Spheres[i].y, g_Spheres[i].z));
+            info.normal = normalize(info.hitPoint - float3(g_Spheres[i].position.xyz));
             info.objectIndex = i;
             info.materialIndex = g_Spheres[i].materialIndex;
         }

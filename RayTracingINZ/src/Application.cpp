@@ -52,9 +52,9 @@ namespace App {
 		Init();
 
         Scene scene({ 20, 5 });
-		scene.AddObject(Sphere(0.0f, 1.0f, 0.0f, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
-		scene.AddObject(Sphere(0.0f, -1.0f, 0.0f, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
-		scene.AddObject(Sphere(5.0f, 0.0f, 0.0f, 4.0f, 2, static_cast<int>(Model::DIFFUSE)));
+		scene.AddObject(Sphere({0.0f, 1.0f, 0.0f, 1.0f}, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
+        scene.AddObject(Sphere({ 0.0f, -1.0f, 0.0f, 1.0f }, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
+        scene.AddObject(Sphere({ 5.0f, 0.0f, 0.0f, 1.0f }, 4.0f, 2, static_cast<int>(Model::DIFFUSE)));
 		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 0.5f, 0.2f, 0.0f), 1.0f, 0.0f, 400.0f));
@@ -86,7 +86,9 @@ namespace App {
         static bool dockSpaceOpen = true;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-        //TODO: Jakis warning jest
+        auto& spheres = scene.GetSpheres();
+        auto& materials = scene.GetMaterials();
+
 		while (msg.message != WM_QUIT)
 		{
             Timer timer;
@@ -104,8 +106,6 @@ namespace App {
 			    ImGui::NewFrame();
 			    //ImGui::ShowDemoWindow();
 
-                m_Renderer->ClearBuffer();
-                m_Renderer->Draw(ts);
 
                 ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
                 if (opt_fullscreen)
@@ -159,6 +159,12 @@ namespace App {
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
                 ImGui::Begin("Viewport");
 			
+                m_Renderer->UpdateSceneBuffers(scene);
+
+                m_Renderer->ClearBuffer();
+                m_Renderer->Draw(ts);
+
+
                 ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 			    if (viewportPanelSize.x > 0 && viewportPanelSize.y > 0 &&
                     (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y))
@@ -172,6 +178,41 @@ namespace App {
 			    ImGui::Image((ImTextureID)textureID.SRV.Get(), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
 			
                 ImGui::PopStyleVar();
+                ImGui::End();
+
+                ImGui::Begin("Spheres");
+
+                for (size_t i = 0; i < spheres.size(); i++)
+                {
+                    ImGui::PushID((int)i);
+                
+                    Sphere& sphere = spheres[i];
+                    ImGui::DragFloat3("Position", &sphere.position.x, 0.1f);
+                    ImGui::DragFloat("Radius", &sphere.radius, 0.1f, 0.0f, FLT_MAX);
+                
+                    ImGui::Separator();
+                
+                    ImGui::PopID();
+                }
+                ImGui::End();
+
+                ImGui::Begin("Materials");
+                for (size_t i = 0; i < materials.size(); i++)
+                {
+                    ImGui::PushID((int)i);
+
+                    Material& material = materials[i];
+                    ImGui::ColorEdit3("Albedo",&material.albedo.x);
+                    ImGui::DragFloat("Roughness", &material.roughness, 0.05f, 0.0f, 1.0f);
+                    ImGui::DragFloat("Metallic", &material.glossiness, 0.05f, 0.0f, 1.0f);
+                    ImGui::ColorEdit3("Emission Color", &material.EmissionColor.x);
+                    ImGui::DragFloat("Emission Power", &material.EmissionPower, 0.05f, 0.0f, FLT_MAX);
+
+                    ImGui::Separator();
+
+                    ImGui::PopID();
+                }
+
                 ImGui::End();
 
                 ImGui::Begin("Settings");

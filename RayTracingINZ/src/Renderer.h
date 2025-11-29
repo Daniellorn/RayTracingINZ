@@ -38,7 +38,7 @@ namespace App {
 	struct RenderData
 	{
 		uint32_t frameIndex = 1;
-		uint32_t raysPerPixel = 20;
+		uint32_t raysPerPixel = 5;
 	};
 
 	class Renderer

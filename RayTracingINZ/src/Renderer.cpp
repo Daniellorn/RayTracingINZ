@@ -31,7 +31,7 @@ namespace App {
 		m_CSTexture.texDesc.MiscFlags = 0;
 		m_CSTexture.texDesc.SampleDesc.Count = 1;
 		m_CSTexture.texDesc.SampleDesc.Quality = 0;
-		m_CSTexture.texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		m_CSTexture.texDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 		m_CSTexture.texDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 
 		// tekstura, uav, srv do compute shadera

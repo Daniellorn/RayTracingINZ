@@ -26,7 +26,7 @@ namespace App {
 
 	struct Sphere
 	{
-		float x, y, z;
+		DirectX::XMFLOAT4 position;
 		float radius;
 
 		int materialIndex;
