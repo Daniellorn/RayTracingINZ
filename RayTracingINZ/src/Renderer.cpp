@@ -39,6 +39,11 @@ namespace App {
 		CHECK(m_Device.device->CreateUnorderedAccessView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.UAV));
 		CHECK(m_Device.device->CreateShaderResourceView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.SRV));
 
+		// tekstura akumulacyjna do compute shadera
+		m_AccumulationTexture.texDesc = m_CSTexture.texDesc;
+		CHECK(m_Device.device->CreateTexture2D(&m_AccumulationTexture.texDesc, nullptr, m_AccumulationTexture.renderTexture.GetAddressOf()));
+		CHECK(m_Device.device->CreateUnorderedAccessView(m_AccumulationTexture.renderTexture.Get(), nullptr, &m_AccumulationTexture.UAV));
+
 		//sampler
 		m_CSTexture.samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 		m_CSTexture.samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -77,6 +82,7 @@ namespace App {
 
 		auto& spheres = scene.GetSpheres();
 		auto& materials = scene.GetMaterials();
+		auto& renderConfiguration = scene.GetRenderConfiguration();
 
 		m_CameraBuffer.cameraPosition = m_Camera->GetPosition();
 		m_CameraBuffer.invProjectionMartix = m_Camera->GetInverseProjection();
@@ -86,7 +92,7 @@ namespace App {
 		m_SpheresBuffer = StructuredBuffer<Sphere>(m_Device.device.Get(), spheres);
 		m_MaterialsBuffer = StructuredBuffer<Material>(m_Device.device.Get(), materials);
 		m_SceneConfigurationBuffer = ConstantBuffer<SceneConfiguration>(m_Device.device.Get(), m_Scene->GetSceneConfiguration());
-		m_RenderDataBuffer = ConstantBuffer<RenderData>(m_Device.device.Get(), RenderData{ .frameIndex = s_FrameIndex });
+		m_RenderDataBuffer = ConstantBuffer<RenderConfiguration>(m_Device.device.Get(), renderConfiguration);
 
 		OnRender();
 
@@ -143,8 +149,14 @@ namespace App {
 	}
 	void Renderer::Draw(float ts)
 	{
+		auto& renderConfiguration = m_Scene->GetRenderConfiguration();
 		bool cameraMoved = m_Camera->OnUpdate(ts);
-		s_FrameIndex++;
+
+		if ((cameraMoved || renderConfiguration.frameIndex == 1) && renderConfiguration.accumulate == 1)
+		{
+			ClearTex(m_Device.deviceContext, m_AccumulationTexture.UAV);
+			renderConfiguration.frameIndex = 1;
+		}
 
 		m_CameraBuffer.cameraPosition = m_Camera->GetPosition();
 		m_CameraBuffer.invProjectionMartix = m_Camera->GetInverseProjection();
@@ -157,11 +169,12 @@ namespace App {
 		m_MaterialsBuffer.BindCS(m_Device.deviceContext.Get(), 1);
 		m_CameraConstantBuffer.BindCS(m_Device.deviceContext.Get(), m_CameraBuffer, 0);
 		m_SceneConfigurationBuffer.BindCS(m_Device.deviceContext.Get(), m_Scene->GetSceneConfiguration(), 1);
-		m_RenderDataBuffer.BindCS(m_Device.deviceContext.Get(), { .frameIndex = s_FrameIndex }, 2);
+		m_RenderDataBuffer.BindCS(m_Device.deviceContext.Get(), renderConfiguration, 2);
 
 		const UINT stride = sizeof(Vertex);
 		const UINT offset = 0;
 		m_Device.deviceContext->CSSetUnorderedAccessViews(0, 1, m_CSTexture.UAV.GetAddressOf(), nullptr);
+		m_Device.deviceContext->CSSetUnorderedAccessViews(1, 1, m_AccumulationTexture.UAV.GetAddressOf(), nullptr);
 		m_CS.Bind(m_Device.deviceContext.Get());
 		m_Device.deviceContext->Dispatch(m_NumGroupsX, m_NumGroupsY, 1);
 
@@ -209,12 +222,19 @@ namespace App {
 		m_CSTexture.SRV.Reset();
 		m_CSTexture.renderTexture.Reset();
 
+		m_AccumulationTexture.UAV.Reset();
+		//m_AccumulationTexture.SRV.Reset();
+		m_AccumulationTexture.renderTexture.Reset();
+
 		m_PSTexture.renderTexture.Reset();
 		m_PSTexture.SRV.Reset();
 
 		// tekstura do compute shadera
 		m_CSTexture.texDesc.Width = width;
 		m_CSTexture.texDesc.Height = height;
+
+		m_AccumulationTexture.texDesc.Width = width;
+		m_AccumulationTexture.texDesc.Height = height;
 
 		m_PSTexture.texDesc.Width = width;
 		m_PSTexture.texDesc.Height = height;
@@ -223,6 +243,11 @@ namespace App {
 		CHECK(m_Device.device->CreateTexture2D(&m_CSTexture.texDesc, nullptr, m_CSTexture.renderTexture.GetAddressOf()));
 		CHECK(m_Device.device->CreateUnorderedAccessView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.UAV));
 		CHECK(m_Device.device->CreateShaderResourceView(m_CSTexture.renderTexture.Get(), nullptr, &m_CSTexture.SRV));
+
+		// tekstura akumulacji
+		m_AccumulationTexture.texDesc = m_CSTexture.texDesc;
+		CHECK(m_Device.device->CreateTexture2D(&m_AccumulationTexture.texDesc, nullptr, m_AccumulationTexture.renderTexture.GetAddressOf()));
+		CHECK(m_Device.device->CreateUnorderedAccessView(m_AccumulationTexture.renderTexture.Get(), nullptr, &m_AccumulationTexture.UAV));
 
 		//PS tekstura
 		CHECK(m_Device.device->CreateTexture2D(&m_PSTexture.texDesc, nullptr, m_PSTexture.renderTexture.GetAddressOf()));

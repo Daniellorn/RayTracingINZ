@@ -47,7 +47,14 @@ namespace App {
 	struct SceneConfiguration
 	{
 		int numOfSpheres;
-		int numOfBounces;
+	};
+
+	struct alignas(16) RenderConfiguration
+	{
+		int frameIndex = 1;
+		int raysPerPixel = 5;
+		int numOfBounces = 5;
+		int accumulate = 0;
 	};
 
 	class Scene
@@ -63,11 +70,13 @@ namespace App {
 		std::vector<Sphere>& GetSpheres() { return m_Objects; }
 		std::vector<Material>& GetMaterials() { return m_Materials; }
 		SceneConfiguration& GetSceneConfiguration() { return m_SceneConfiguration; }
+		RenderConfiguration& GetRenderConfiguration() { return m_RenderConfiguration; }
 
 	private:
 		std::vector<Sphere> m_Objects;
 		std::vector<Material> m_Materials;
 
 		SceneConfiguration m_SceneConfiguration;
+		RenderConfiguration m_RenderConfiguration;
 	};
 }

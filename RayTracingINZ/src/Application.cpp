@@ -51,13 +51,14 @@ namespace App {
 	{
 		Init();
 
-        Scene scene({ 20, 5 });
+        Scene scene({ 4 });
 		scene.AddObject(Sphere({0.0f, 1.0f, 0.0f, 1.0f}, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
         scene.AddObject(Sphere({ 0.0f, -1.0f, 0.0f, 1.0f }, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
         scene.AddObject(Sphere({ 5.0f, 0.0f, 0.0f, 1.0f }, 4.0f, 2, static_cast<int>(Model::DIFFUSE)));
+		scene.AddObject(Sphere({0.0f, -5.0f, 0.0f, 1.0f}, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
 		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
-		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 0.5f, 0.2f, 0.0f), 1.0f, 0.0f, 400.0f));
+		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 5.0f));
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -88,6 +89,10 @@ namespace App {
 
         auto& spheres = scene.GetSpheres();
         auto& materials = scene.GetMaterials();
+        auto& renderConfiguration = scene.GetRenderConfiguration();
+
+        bool reset = false;
+        bool accumulate = false;
 
 		while (msg.message != WM_QUIT)
 		{
@@ -215,9 +220,30 @@ namespace App {
 
                 ImGui::End();
 
+
+
                 ImGui::Begin("Settings");
                 ImGui::Text("Last render: %.3fms", m_LastRenderTime);
+                ImGui::DragInt("Max bounce", &renderConfiguration.numOfBounces, 1, 1, 50);
+                ImGui::DragInt("Max samples", &renderConfiguration.raysPerPixel, 1, 1, 100);
+                
+                if (ImGui::Checkbox("Accumulate", &accumulate))
+                {
+                    renderConfiguration.accumulate = accumulate ? 1 : 0;
+                }
+
+                if (ImGui::Button("Reset"))
+                {
+                    reset = true;
+                    renderConfiguration.frameIndex = 1;
+                };
+
                 ImGui::End();
+
+                if (renderConfiguration.accumulate == 1)
+                {
+                    renderConfiguration.frameIndex++;
+                }
 
                 ImGui::End();
             

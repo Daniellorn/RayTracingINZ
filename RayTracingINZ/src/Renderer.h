@@ -35,12 +35,6 @@ namespace App {
 		DirectX::XMFLOAT3 cameraPosition;
 	};
 
-	struct RenderData
-	{
-		uint32_t frameIndex = 1;
-		uint32_t raysPerPixel = 5;
-	};
-
 	class Renderer
 	{
 	public:
@@ -60,19 +54,26 @@ namespace App {
 
 		Device& GetDevice() { return m_Device; }
 		Texture& GetPSTexture() { return m_PSTexture; }
+		Texture& GetAccumulationTexture() { return m_AccumulationTexture; }
 
 		void UpdateSceneBuffers(Scene& scene);
+
+		static void ClearTex(Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> UAV)
+		{
+			const float clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
+			deviceContext->ClearUnorderedAccessViewFloat(UAV.Get(), clearColor);
+		}
 
 	private:
 		HWND m_WindowHandle;
 		int m_Width;
 		int m_Height;
-		inline static uint32_t s_FrameIndex = 1;
 
 		Device m_Device;
 		Swapchain m_Swapchain;
 		Texture m_CSTexture;
 		Texture m_PSTexture;
+		Texture m_AccumulationTexture;
 		VertexShader m_VS;
 		PixelShader m_PS;
 		ComputeShader m_CS;
@@ -91,7 +92,7 @@ namespace App {
 		
 
 		ConstantBuffer<CameraBuffer> m_CameraConstantBuffer;
-		ConstantBuffer<RenderData> m_RenderDataBuffer;
+		ConstantBuffer<RenderConfiguration> m_RenderDataBuffer;
 		ConstantBuffer<SceneConfiguration> m_SceneConfigurationBuffer;
 		StructuredBuffer<Sphere> m_SpheresBuffer;
 		StructuredBuffer<Material> m_MaterialsBuffer;

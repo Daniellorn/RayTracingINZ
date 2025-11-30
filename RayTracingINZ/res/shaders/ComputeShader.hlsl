@@ -10,13 +10,14 @@ cbuffer CameraBuffer : register(b0)
 cbuffer SceneConfiguration : register(b1)
 {
     int numOfSpheres;
-    int numOfBounce;
 }
 
-cbuffer RenderData : register(b2)
+cbuffer RenderConfiguration : register(b2)
 {
-    uint frameIndex;
-    uint raysPerPixel;
+    int frameIndex;
+    int raysPerPixel;
+    int numOfBounces;
+    int accumulate;
 }
 
 struct Ray
@@ -57,6 +58,7 @@ struct Material
 StructuredBuffer<Sphere> g_Spheres : register(t0);
 StructuredBuffer<Material> g_Materials : register(t1);
 RWTexture2D<float4> outputTex : register(u0);
+RWTexture2D<float4> accumulationTex : register(u1);
 
 
 float3 RayAt(Ray ray, float t)
@@ -160,7 +162,7 @@ float3 TraceRay(Ray ray, inout uint seed)
     float3 light = float3(0.0f, 0.0f, 0.0f);
     float3 contribution = float3(1.0f, 1.0f, 1.0f);
     
-    for (int i = 0; i < numOfBounce; i++)
+    for (int i = 0; i < numOfBounces; i++)
     {
         HitInfo info = CheckIntersection(ray);
         
@@ -180,9 +182,12 @@ float3 TraceRay(Ray ray, inout uint seed)
         ray.origin = info.hitPoint + info.normal * EPSILON;
         
         float3 diffuseDir = normalize(RandomVec3OnUnitHemiSphere(seed, info.normal));
+        float3 specularDir = reflect(ray.direction, info.normal); // ray.direction - 2.0 * dot(normal, ray.direction) * normal;
         
-        ray.direction = diffuseDir;
-        contribution *= sphereMaterial.albedo.xyz;
+        bool isSpecularBounce = sphereMaterial.glossiness >= RandomFloat(seed); //glossiness
+
+        ray.direction = lerp(diffuseDir, specularDir, sphereMaterial.roughness * int(isSpecularBounce));
+        contribution *= lerp(sphereMaterial.albedo.xyz, float3(1.0f, 1.0f, 1.0f), int(isSpecularBounce)); //* invPI;
         
     }
     
@@ -223,12 +228,38 @@ void main( uint3 DTid : SV_DispatchThreadID )
       
     float3 totalColor = float3(0.0f, 0.0f, 0.0f);
     
-    for (int i = 0; i < int(raysPerPixel); i++)
+    for (int i = 0; i < raysPerPixel; i++)
     {
-        totalColor += TraceRay(ray, seed);
+        float3 jitteredDirection = ray.direction;
+        jitteredDirection += RandomVec3(seed, -0.001, 0.001);
+        
+        Ray jitteredRay;
+        jitteredRay.origin = ray.origin;
+        jitteredRay.direction = normalize(jitteredDirection);
+        
+        totalColor += TraceRay(jitteredRay, seed);
     }
+    
+    //for (int i = 0; i < raysPerPixel; i++)
+    //{        
+    //    totalColor += TraceRay(ray, seed);
+    //}
 
     float3 finalColor = totalColor.xyz / float(raysPerPixel);
     
-    outputTex[pixel] = float4(finalColor, 1.0f);
+    if (accumulate)
+    {
+        float4 prev = accumulationTex[pixel];
+        float t = 1 / float(frameIndex);
+        
+        float3 blend = lerp(prev.xyz, finalColor, t);
+        
+        accumulationTex[pixel] = float4(blend, 1.0f);
+        outputTex[pixel] = float4(blend, 1.0f);
+    }
+    else
+    {
+        outputTex[pixel] = float4(finalColor, 1.0f);
+    }
+    
 }

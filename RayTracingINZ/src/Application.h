@@ -24,9 +24,6 @@ namespace App {
 
 	private:
 
-
-	private:
-
 		HWND m_WindowHandle;
 		WindowSpecification m_WindowSpec;
 
