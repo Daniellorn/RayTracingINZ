@@ -82,6 +82,8 @@ namespace App {
 
 		auto& spheres = scene.GetSpheres();
 		auto& materials = scene.GetMaterials();
+		auto& triangles = scene.GetTriangles();
+		auto& models = scene.GetModels();
 		auto& renderConfiguration = scene.GetRenderConfiguration();
 
 		m_CameraBuffer.cameraPosition = m_Camera->GetPosition();
@@ -91,6 +93,8 @@ namespace App {
 		m_CameraConstantBuffer = ConstantBuffer <CameraBuffer>(m_Device.device.Get(), m_CameraBuffer);
 		m_SpheresBuffer = StructuredBuffer<Sphere>(m_Device.device.Get(), spheres);
 		m_MaterialsBuffer = StructuredBuffer<Material>(m_Device.device.Get(), materials);
+		m_TrianglesBuffer = StructuredBuffer<Triangle>(m_Device.device.Get(), triangles);
+		m_ModelsBuffer = StructuredBuffer<Model>(m_Device.device.Get(), models);
 		m_SceneConfigurationBuffer = ConstantBuffer<SceneConfiguration>(m_Device.device.Get(), m_Scene->GetSceneConfiguration());
 		m_RenderDataBuffer = ConstantBuffer<RenderConfiguration>(m_Device.device.Get(), renderConfiguration);
 
@@ -167,6 +171,8 @@ namespace App {
 
 		m_SpheresBuffer.BindCS(m_Device.deviceContext.Get(), 0);
 		m_MaterialsBuffer.BindCS(m_Device.deviceContext.Get(), 1);
+		m_TrianglesBuffer.BindCS(m_Device.deviceContext.Get(), 2);
+		m_ModelsBuffer.BindCS(m_Device.deviceContext.Get(), 3);
 		m_CameraConstantBuffer.BindCS(m_Device.deviceContext.Get(), m_CameraBuffer, 0);
 		m_SceneConfigurationBuffer.BindCS(m_Device.deviceContext.Get(), m_Scene->GetSceneConfiguration(), 1);
 		m_RenderDataBuffer.BindCS(m_Device.deviceContext.Get(), renderConfiguration, 2);

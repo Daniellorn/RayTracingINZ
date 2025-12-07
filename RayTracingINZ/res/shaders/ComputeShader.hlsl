@@ -54,9 +54,34 @@ struct Material
     float EmissionPower;
 };
 
+struct Triangle
+{
+    float3 v1;
+    float padding1;
+    float3 v2;
+    float padding2;
+    float3 v3;
+    float padding3;
+
+    float3 n1;
+    float padding4;
+    float3 n2;
+    float padding5;
+    float3 n3;
+};
+
+struct Model
+{
+    int startTriangle;
+    int triangleCount;
+    int materialIndex;
+};
+
 
 StructuredBuffer<Sphere> g_Spheres : register(t0);
 StructuredBuffer<Material> g_Materials : register(t1);
+StructuredBuffer<Triangle> g_Triangles : register(t2);
+StructuredBuffer<Model> g_Models : register(t3);
 RWTexture2D<float4> outputTex : register(u0);
 RWTexture2D<float4> accumulationTex : register(u1);
 
@@ -110,6 +135,47 @@ float SphereIntersection(Ray ray, Sphere sphere)
     }
 }
 
+float TriangleIntersection(Ray ray, Triangle tri)
+{
+    float3 e1 = tri.v2 - tri.v1;
+    float3 e2 = tri.v3 - tri.v1;
+    
+    float3 q = cross(ray.direction, e2);
+    float a = dot(e1, q);
+    
+    if (a > -EPSILON && a < EPSILON)
+    {
+        return -1.0f;
+    }
+    
+    float f = 1 / a;
+    
+    float3 s = ray.origin - tri.v1;
+    float u = f * dot(s, q);
+    
+    if (u < 0.0f)
+    {
+        return -1.0f;
+    }
+    
+    float3 r = cross(s, e1);
+    float v = f * dot(ray.direction, r);
+    
+    if (v < 0.0f || u + v > 1.0f)
+    {
+        return -1.0f;
+    }
+    
+    float t = f * dot(e2, r);
+    
+    if (t > EPSILON)
+    {
+        return t;
+    }
+    
+    return -1.0f;
+}
+
 HitInfo Miss()
 {
     HitInfo info = (HitInfo)0;
@@ -149,6 +215,35 @@ HitInfo CheckIntersection(Ray ray)
         }
     }
     
+    Model model = g_Models[0];
+    
+    for (int j = 0; j < model.triangleCount; j++)
+    {
+        Triangle tri = g_Triangles[model.startTriangle + j];
+        
+        float t = TriangleIntersection(ray, tri);
+        
+        if (t < 0.0f)
+        {
+            continue;
+        }
+        
+        if (t < info.hitDistance)
+        {
+            info.hitDistance = t;
+            info.t = t;
+            info.hitPoint = RayAt(ray, t);
+            
+            float3 e1 = tri.v2 - tri.v1;
+            float3 e2 = tri.v3 - tri.v1;
+            info.normal = normalize(cross(e1, e2));
+            
+            info.objectIndex = model.startTriangle + j;
+            info.materialIndex = model.materialIndex;
+    
+        }
+    }
+    
     if (info.hitDistance == MAX_FLOAT)
     {
         info = Miss();
@@ -170,24 +265,25 @@ float3 TraceRay(Ray ray, inout uint seed)
         {
             break;
             float3 unitDir = normalize(ray.direction);
-            float a = 0.5 * (unitDir.y + 1.0f);
-            return float3(lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), a));
+            float t = 0.5f * (unitDir.y + 1.0f);
+            light += lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), t) * contribution;
+            //break;
         }
         
-        Sphere closestSphere = g_Spheres[info.objectIndex];
-        Material sphereMaterial = g_Materials[info.materialIndex];
+        //Sphere closestSphere = g_Spheres[info.objectIndex];
+        Material material = g_Materials[info.materialIndex];
         
-        light += GetEmission(sphereMaterial) * contribution;
+        light += GetEmission(material) * contribution;
         
         ray.origin = info.hitPoint + info.normal * EPSILON;
         
         float3 diffuseDir = normalize(RandomVec3OnUnitHemiSphere(seed, info.normal));
         float3 specularDir = reflect(ray.direction, info.normal); // ray.direction - 2.0 * dot(normal, ray.direction) * normal;
         
-        bool isSpecularBounce = sphereMaterial.glossiness >= RandomFloat(seed); //glossiness
+        bool isSpecularBounce = material.glossiness >= RandomFloat(seed); //glossiness
 
-        ray.direction = lerp(diffuseDir, specularDir, sphereMaterial.roughness * int(isSpecularBounce));
-        contribution *= lerp(sphereMaterial.albedo.xyz, float3(1.0f, 1.0f, 1.0f), int(isSpecularBounce)); //* invPI;
+        ray.direction = lerp(diffuseDir, specularDir, material.roughness * int(isSpecularBounce));
+        contribution *= lerp(material.albedo.xyz, float3(1.0f, 1.0f, 1.0f), int(isSpecularBounce)); //* invPI;
         
     }
     

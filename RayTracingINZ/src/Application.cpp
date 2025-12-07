@@ -52,13 +52,16 @@ namespace App {
 		Init();
 
         Scene scene({ 4 });
-		scene.AddObject(Sphere({0.0f, 1.0f, 0.0f, 1.0f}, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
-        scene.AddObject(Sphere({ 0.0f, -1.0f, 0.0f, 1.0f }, 1.0f, 1, static_cast<int>(Model::DIFFUSE)));
-        scene.AddObject(Sphere({ 5.0f, 0.0f, 0.0f, 1.0f }, 4.0f, 2, static_cast<int>(Model::DIFFUSE)));
-		scene.AddObject(Sphere({0.0f, -5.0f, 0.0f, 1.0f}, 1.0f, 0, static_cast<int>(Model::DIFFUSE)));
+		scene.AddObject(Sphere({-1.7f, -0.7f, -5.1f, 1.0f}, 1.0f, 0, static_cast<int>(Type::DIFFUSE)));
+        scene.AddObject(Sphere({ 0.0f, -0.6f, 0.0f, 1.0f }, 1.0f, 1, static_cast<int>(Type::DIFFUSE)));
+        scene.AddObject(Sphere({ -17.0f, 5.3f, 0.0f, 1.0f }, 4.0f, 2, static_cast<int>(Type::DIFFUSE)));
+		scene.AddObject(Sphere({0.0f, -43.5f, 0.0f, 1.0f}, 42.1f, 0, static_cast<int>(Type::DIFFUSE)));
 		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 5.0f));
+		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
+
+        scene.AddObject("res/models/model.obj", 3);
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -94,9 +97,11 @@ namespace App {
         bool reset = false;
         bool accumulate = false;
 
+        Timer timer;
+
 		while (msg.message != WM_QUIT)
 		{
-            Timer timer;
+            timer.Reset();
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
 				TranslateMessage(&msg);

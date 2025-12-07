@@ -115,7 +115,6 @@ namespace App {
 			m_Data = data;
 		}
 
-		// TODO: To trzeba zmienic bo caly czas kopiuje
 		void BindPS(ID3D11DeviceContext* deviceContext, uint32_t slot)
 		{
 			deviceContext->PSSetShaderResources(slot, 1, m_SRV.GetAddressOf());

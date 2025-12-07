@@ -38,7 +38,8 @@ project "RayTracingINZ"
 
     includedirs
     {
-        "%{prj.name}/vendor/ImGui"
+        "%{prj.name}/vendor/ImGui",
+        "%{prj.name}/vendor/Assimp"
     }
 
     links
@@ -46,7 +47,7 @@ project "RayTracingINZ"
         "D3D11.lib",
         "D3DCompiler.lib",
         "User32.lib",
-        "DXGI.lib"
+        "DXGI.lib",
     }
 
     filter "files:**PixelShader.hlsl"
@@ -78,7 +79,9 @@ project "RayTracingINZ"
     filter "configurations:Release"
         defines { "NDEBUG" }
         optimize "On"
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/Release/assimp-vc143-mt.lib" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }
         symbols "On"
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/Debug/assimp-vc143-mtd.lib" }

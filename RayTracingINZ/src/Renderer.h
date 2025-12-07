@@ -96,6 +96,8 @@ namespace App {
 		ConstantBuffer<SceneConfiguration> m_SceneConfigurationBuffer;
 		StructuredBuffer<Sphere> m_SpheresBuffer;
 		StructuredBuffer<Material> m_MaterialsBuffer;
+		StructuredBuffer<Triangle> m_TrianglesBuffer;
+		StructuredBuffer<Model> m_ModelsBuffer;
 
 		struct Vertex
 		{
