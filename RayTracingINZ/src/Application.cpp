@@ -2,6 +2,7 @@
 #include <DirectXMath.h>
 #include <Windows.h>
 #include <algorithm>
+#include <thread>
 
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
@@ -61,7 +62,12 @@ namespace App {
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 5.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
 
-        scene.AddObject("res/models/model.obj", 3);
+        //scene.AddObject("res/models/model.obj", 3);
+        if (!scene.AddObject("res/models/model.obj", 3))
+        {
+
+            return;
+        }
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -96,6 +102,7 @@ namespace App {
 
         bool reset = false;
         bool accumulate = false;
+        bool stopRendering = false;
 
         Timer timer;
 
@@ -109,6 +116,12 @@ namespace App {
 			}
             else
             {
+                if (IsIconic(m_WindowHandle))
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    continue;
+                }
+
                 float ts = GetDeltaTime();
 
 			    ImGui_ImplDX11_NewFrame();

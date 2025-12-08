@@ -18,6 +18,12 @@ namespace App {
 
 	bool Scene::AddObject(const std::filesystem::path& filepath, int materialIndex)
 	{
+
+		if (!std::filesystem::exists(filepath))
+		{
+			return false;
+		}
+
 		Assimp::Importer importer;
 
 		const aiScene* pScene = importer.ReadFile(filepath.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded | aiProcess_GenNormals);
