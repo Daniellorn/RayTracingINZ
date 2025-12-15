@@ -98,6 +98,7 @@ namespace App {
 		StructuredBuffer<Material> m_MaterialsBuffer;
 		StructuredBuffer<Triangle> m_TrianglesBuffer;
 		StructuredBuffer<Model> m_ModelsBuffer;
+		StructuredBuffer<BVHNode> m_BVHNodeBuffer;
 
 		struct Vertex
 		{

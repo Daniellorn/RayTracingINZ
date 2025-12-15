@@ -54,7 +54,42 @@ namespace App {
 		DirectX::XMFLOAT4 n1;
 		DirectX::XMFLOAT4 n2; 
 		DirectX::XMFLOAT4 n3;
+
+		DirectX::XMFLOAT4 centroid;
 	};
+
+	struct BVHNode
+	{
+		DirectX::XMFLOAT4 aabbMin, aabbMax;
+		uint32_t leftFirst, triangleCount; 
+		// LeftFirst - jesli traingleCount = 0, to leftFirst jest indeksem lewego potomka. 
+		// Jesli triangleCount > 0 to znaczy ze jestesmy w lisciu i leftFirst jest indeksem pierwszego trojkata.
+	};
+
+	//struct BVHNode2
+	//{
+	//	union
+	//	{
+	//		struct
+	//		{
+	//			DirectX::XMFLOAT3 aabbMin;
+	//			uint32_t leftFirst;
+	//		};
+	//
+	//		DirectX::XMFLOAT4 aabbmin;
+	//	};
+	//
+	//	union
+	//	{
+	//		struct
+	//		{
+	//			DirectX::XMFLOAT3 aabbMax;
+	//			uint32_t triangleCount;
+	//		};
+	//
+	//		DirectX::XMFLOAT4 aabbmax;
+	//	};
+	//};
 
 	struct Model
 	{
@@ -66,13 +101,14 @@ namespace App {
 	struct SceneConfiguration
 	{
 		int numOfSpheres;
+		int numOfModels;
 	};
 
 	struct alignas(16) RenderConfiguration
 	{
 		int frameIndex = 1;
-		int raysPerPixel = 5;
-		int numOfBounces = 5;
+		int raysPerPixel = 1;
+		int numOfBounces = 2;
 		int accumulate = 0;
 	};
 
@@ -80,7 +116,8 @@ namespace App {
 	{
 	public:
 
-		Scene(const SceneConfiguration& sceneConfiguration) : m_SceneConfiguration(sceneConfiguration) {};
+		Scene(const SceneConfiguration& sceneConfiguration) : m_SceneConfiguration(sceneConfiguration) 
+		{};
 		~Scene() = default;
 
 		void AddObject(const Sphere& sphere);
@@ -91,15 +128,27 @@ namespace App {
 		std::vector<Sphere>& GetSpheres() { return m_Objects; }
 		std::vector<Material>& GetMaterials() { return m_Materials; }
 		std::vector<Triangle>& GetTriangles() { return m_Triangles; }
+		std::vector<BVHNode>& GetBVHNodes() { return m_BVHNodes; }
 		std::vector<Model>& GetModels() { return m_Models; }
 		SceneConfiguration& GetSceneConfiguration() { return m_SceneConfiguration; }
 		RenderConfiguration& GetRenderConfiguration() { return m_RenderConfiguration; }
+
+		
+		void BuildBVH(int numOfTriangles);
+
+	private:
+		void UpdateNodeBounds(uint32_t nodeIndex);
+		void SubDivide(uint32_t nodeIndex);
 
 	private:
 		std::vector<Sphere> m_Objects;
 		std::vector<Material> m_Materials;
 		std::vector<Triangle> m_Triangles;
 		std::vector<Model> m_Models;
+		std::vector<BVHNode> m_BVHNodes;
+
+		uint32_t rootNodeIndex = 0;
+		uint32_t nodesUsed = 1;
 
 		SceneConfiguration m_SceneConfiguration;
 		RenderConfiguration m_RenderConfiguration;

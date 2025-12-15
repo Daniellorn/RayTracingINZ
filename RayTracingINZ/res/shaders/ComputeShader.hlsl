@@ -10,6 +10,7 @@ cbuffer CameraBuffer : register(b0)
 cbuffer SceneConfiguration : register(b1)
 {
     int numOfSpheres;
+    int numOfModels;
 }
 
 cbuffer RenderConfiguration : register(b2)
@@ -56,18 +57,15 @@ struct Material
 
 struct Triangle
 {
-    float3 v1;
-    float padding1;
-    float3 v2;
-    float padding2;
-    float3 v3;
-    float padding3;
+    float4 v1;
+    float4 v2;
+    float4 v3;
 
-    float3 n1;
-    float padding4;
-    float3 n2;
-    float padding5;
-    float3 n3;
+    float4 n1;
+    float4 n2;
+    float4 n3;
+    
+    float4 MyCentroid;
 };
 
 struct Model
@@ -77,11 +75,20 @@ struct Model
     int materialIndex;
 };
 
+struct BVHNode
+{
+    float4 aabbMin;
+    float4 aabbMax;
+    uint leftFirst;
+    uint triangleCount;
+};
+
 
 StructuredBuffer<Sphere> g_Spheres : register(t0);
 StructuredBuffer<Material> g_Materials : register(t1);
 StructuredBuffer<Triangle> g_Triangles : register(t2);
 StructuredBuffer<Model> g_Models : register(t3);
+StructuredBuffer<BVHNode> g_BVHNodes : register(t4);
 RWTexture2D<float4> outputTex : register(u0);
 RWTexture2D<float4> accumulationTex : register(u1);
 
@@ -137,8 +144,8 @@ float SphereIntersection(Ray ray, Sphere sphere)
 
 float TriangleIntersection(Ray ray, Triangle tri)
 {
-    float3 e1 = tri.v2 - tri.v1;
-    float3 e2 = tri.v3 - tri.v1;
+    float3 e1 = tri.v2.xyz - tri.v1.xyz;
+    float3 e2 = tri.v3.xyz - tri.v1.xyz;
     
     float3 q = cross(ray.direction, e2);
     float a = dot(e1, q);
@@ -150,7 +157,7 @@ float TriangleIntersection(Ray ray, Triangle tri)
     
     float f = 1 / a;
     
-    float3 s = ray.origin - tri.v1;
+    float3 s = ray.origin - tri.v1.xyz;
     float u = f * dot(s, q);
     
     if (u < 0.0f)
@@ -176,7 +183,28 @@ float TriangleIntersection(Ray ray, Triangle tri)
     return -1.0f;
 }
 
-HitInfo Miss()
+float IntersectAABB(const Ray ray, const BVHNode node)
+{   
+    float3 invDir = 1 / ray.direction.xyz;
+    float3 t1 = (node.aabbMin.xyz - ray.origin.xyz) * invDir;
+    float3 t2 = (node.aabbMax.xyz - ray.origin.xyz) * invDir;
+    
+    float3 tmin = min(t1, t2);
+    float3 tmax = max(t1, t2);
+    
+    float tNear = max(max(tmin.x, tmin.y), tmin.z);
+    float tFar = min(min(tmax.x, tmax.y), tmax.z);
+    
+    if (tFar <= tNear || tFar < 0.0f)
+    {
+        return MAX_FLOAT;
+    }
+    
+    return tNear;
+}
+
+HitInfo
+    Miss()
 {
     HitInfo info = (HitInfo)0;
     info.hitDistance = -1.0f;
@@ -214,33 +242,37 @@ HitInfo CheckIntersection(Ray ray)
             info.materialIndex = g_Spheres[i].materialIndex;
         }
     }
+   
     
-    Model model = g_Models[0];
-    
-    for (int j = 0; j < model.triangleCount; j++)
+    for (int index = 0; index < numOfModels; index++)
     {
-        Triangle tri = g_Triangles[model.startTriangle + j];
+        Model model = g_Models[index];
         
-        float t = TriangleIntersection(ray, tri);
-        
-        if (t < 0.0f)
+        for (int j = 0; j < model.triangleCount; j++)
         {
-            continue;
-        }
+            Triangle tri = g_Triangles[model.startTriangle + j];
         
-        if (t < info.hitDistance)
-        {
-            info.hitDistance = t;
-            info.t = t;
-            info.hitPoint = RayAt(ray, t);
+            float t = TriangleIntersection(ray, tri);
+        
+            if (t < 0.0f)
+            {
+                continue;
+            }
+        
+            if (t < info.hitDistance)
+            {
+                info.hitDistance = t;
+                info.t = t;
+                info.hitPoint = RayAt(ray, t);
             
-            float3 e1 = tri.v2 - tri.v1;
-            float3 e2 = tri.v3 - tri.v1;
-            info.normal = normalize(cross(e1, e2));
+                float3 e1 = tri.v2.xyz - tri.v1.xyz;
+                float3 e2 = tri.v3.xyz - tri.v1.xyz;
+                info.normal = normalize(cross(e1, e2));
             
-            info.objectIndex = model.startTriangle + j;
-            info.materialIndex = model.materialIndex;
+                info.objectIndex = model.startTriangle + j;
+                info.materialIndex = model.materialIndex;
     
+            }
         }
     }
     
@@ -263,11 +295,11 @@ float3 TraceRay(Ray ray, inout uint seed)
         
         if (info.hitDistance < 0.0f)
         {
-            break;
+            //break;
             float3 unitDir = normalize(ray.direction);
             float t = 0.5f * (unitDir.y + 1.0f);
             light += lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), t) * contribution;
-            //break;
+            break;
         }
         
         //Sphere closestSphere = g_Spheres[info.objectIndex];
@@ -302,7 +334,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         return;
     
     uint seed = pixel.x + pixel.y * width;
-    seed *= frameIndex;
+    seed *= PCG_Hash(seed + frameIndex * 719393);
     
     float2 texSize = float2(width, height);
     float2 normalizedCord = float2(pixel) / float2(texSize);
@@ -355,6 +387,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
     }
     else
     {
+        //if (g_BVHNodes[0].triangleCount > 100)
+        //{
+        //    finalColor = float3(1.0f, 0.0f, 0.0f);
+        //}
+        
         outputTex[pixel] = float4(finalColor, 1.0f);
     }
     

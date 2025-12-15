@@ -4,6 +4,8 @@
 #include "assimp/scene.h"          // Output data structure
 #include "assimp/postprocess.h"     // Post processing flags
 
+using namespace DirectX;
+
 namespace App {
 
 	void Scene::AddObject(const Sphere& sphere)
@@ -82,6 +84,162 @@ namespace App {
 
 		return true;
 
+	}
+
+	void Scene::BuildBVH(int numOfTriangles)
+	{
+		m_BVHNodes.resize(2 * numOfTriangles - 1);
+
+		for (int i = 0; i < numOfTriangles; i++)
+		{
+			Triangle& tri = m_Triangles[i];
+
+			XMVECTOR v1 = XMLoadFloat4(&tri.v1);
+			XMVECTOR v2 = XMLoadFloat4(&tri.v2);
+			XMVECTOR v3 = XMLoadFloat4(&tri.v3);
+
+			XMVECTOR sum = XMVectorAdd(XMVectorAdd(v1, v2), v3);
+			XMVECTOR centroid = XMVectorScale(sum, 0.3333f);
+
+			XMStoreFloat4(&tri.centroid, centroid);
+		}
+
+		BVHNode& root = m_BVHNodes[rootNodeIndex];
+		root.leftFirst = 0;
+		root.triangleCount = numOfTriangles;
+
+		UpdateNodeBounds(rootNodeIndex);
+		SubDivide(rootNodeIndex);
+	}
+
+	void Scene::UpdateNodeBounds(uint32_t nodeIndex)
+	{
+		BVHNode& node = m_BVHNodes[nodeIndex];
+		XMVECTOR aabbMin = XMVectorSet(1e30f, 1e30f, 1e30f, 1e30f);
+		XMVECTOR aabbMax = XMVectorSet(-1e30f, -1e30f, -1e30f, -1e30f);
+
+		for (int first = node.leftFirst, i = 0; i < node.triangleCount; i++)
+		{
+			Triangle& leafTri = m_Triangles[first + i];
+
+			XMVECTOR v1 = XMLoadFloat4(&leafTri.v1);
+			XMVECTOR v2 = XMLoadFloat4(&leafTri.v2);
+			XMVECTOR v3 = XMLoadFloat4(&leafTri.v3);
+
+			aabbMin = XMVectorMin(aabbMin, v1);
+			aabbMin = XMVectorMin(aabbMin, v2);
+			aabbMin = XMVectorMin(aabbMin, v3);
+
+			aabbMax = XMVectorMax(aabbMax, v1);
+			aabbMax = XMVectorMax(aabbMax, v2);
+			aabbMax = XMVectorMax(aabbMax, v3);
+
+		}
+
+		XMStoreFloat4(&node.aabbMin, aabbMin);
+		XMStoreFloat4(&node.aabbMax, aabbMax);
+	}
+
+	void Scene::SubDivide(uint32_t nodeIndex)
+	{
+		BVHNode& node = m_BVHNodes[nodeIndex];
+
+		if (node.triangleCount <= 2)
+		{
+			return;
+		}
+
+		XMVECTOR aabbMin = XMLoadFloat4(&node.aabbMin);
+		XMVECTOR aabbMax = XMLoadFloat4(&node.aabbMax);
+
+		XMVECTOR extent = XMVectorSubtract(aabbMax, aabbMin);
+		int axis = 0;
+
+		XMFLOAT4 ex;
+		XMStoreFloat4(&ex, extent);
+
+		if (ex.y > ex.x)
+		{
+			axis = 1;
+		}
+
+		if (ex.z > ((axis == 0) ? ex.x : ex.y))
+		{
+			axis = 2;
+		}
+
+		XMFLOAT4 aabbMinf;
+		XMStoreFloat4(&aabbMinf, aabbMin);
+
+		float splitPos = 0.0f;
+		if (axis == 0)
+		{
+			splitPos = aabbMinf.x + ex.x * 0.5f;
+		}
+		else if (axis == 1)
+		{
+			splitPos = aabbMinf.y + ex.y * 0.5f;
+		}
+		else
+		{
+			splitPos = aabbMinf.z + ex.z * 0.5f;
+		}
+		
+		int i = node.leftFirst;
+		int j = i + node.triangleCount - 1;
+
+		while (i <= j)
+		{
+			XMVECTOR cen = XMLoadFloat4(&m_Triangles[i].centroid);
+
+			float centroidAxis = 0.0f;
+			if (axis == 0)
+			{
+				centroidAxis = XMVectorGetX(cen);
+			}
+			else if (axis == 1)
+			{
+				centroidAxis = XMVectorGetY(cen);
+			}
+			else
+			{
+				centroidAxis = XMVectorGetZ(cen);
+			}
+
+			if (centroidAxis < splitPos)
+			{
+				i++;
+			}
+			else
+			{
+				std::swap(m_Triangles[i], m_Triangles[j]);
+				j--;
+			}
+		}
+
+		int leftCount = i - node.leftFirst;
+
+		if (leftCount == 0 || leftCount == node.triangleCount)
+		{
+			return;
+		}
+
+		int leftChildIndex = nodesUsed++;
+		int rightChildIndex = nodesUsed++;
+
+
+		m_BVHNodes[leftChildIndex].leftFirst = node.leftFirst;
+		m_BVHNodes[leftChildIndex].triangleCount = leftCount;
+		m_BVHNodes[rightChildIndex].leftFirst = i;
+		m_BVHNodes[rightChildIndex].triangleCount = node.triangleCount - leftCount;
+		node.leftFirst = leftChildIndex;
+		node.triangleCount = 0;
+
+		UpdateNodeBounds(leftChildIndex);
+		UpdateNodeBounds(rightChildIndex);
+
+		SubDivide(leftChildIndex);
+		SubDivide(rightChildIndex);
 	}
 
 }

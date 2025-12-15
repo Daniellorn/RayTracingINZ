@@ -52,8 +52,8 @@ namespace App {
 	{
 		Init();
 
-        Scene scene({ 4 });
-		scene.AddObject(Sphere({-1.7f, -0.7f, -5.1f, 1.0f}, 1.0f, 0, static_cast<int>(Type::DIFFUSE)));
+        Scene scene({ 4, 2 });
+		scene.AddObject(Sphere({-1.7f, -0.7f, -5.1f, 1.0f}, 1.0f, 4, static_cast<int>(Type::DIFFUSE)));
         scene.AddObject(Sphere({ 0.0f, -0.6f, 0.0f, 1.0f }, 1.0f, 1, static_cast<int>(Type::DIFFUSE)));
         scene.AddObject(Sphere({ -17.0f, 5.3f, 0.0f, 1.0f }, 4.0f, 2, static_cast<int>(Type::DIFFUSE)));
 		scene.AddObject(Sphere({0.0f, -43.5f, 0.0f, 1.0f}, 42.1f, 0, static_cast<int>(Type::DIFFUSE)));
@@ -61,13 +61,25 @@ namespace App {
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 5.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
+		scene.AddMaterial(Material(XMFLOAT4{ 0.5f, 0.7f, 0.3f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
 
         //scene.AddObject("res/models/model.obj", 3);
+#define model 1
+#if model
         if (!scene.AddObject("res/models/model.obj", 3))
         {
-
+        
             return;
         }
+#else
+        if (!scene.AddObject("res/models/stanford_dragon_pbr.glb", 3))
+        {
+        
+            return;
+        }
+#endif
+
+        scene.BuildBVH((int)scene.GetTriangles().size());
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();

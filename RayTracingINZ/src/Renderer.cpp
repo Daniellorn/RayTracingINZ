@@ -85,6 +85,7 @@ namespace App {
 		auto& triangles = scene.GetTriangles();
 		auto& models = scene.GetModels();
 		auto& renderConfiguration = scene.GetRenderConfiguration();
+		auto& bvhnodes = scene.GetBVHNodes();
 
 		m_CameraBuffer.cameraPosition = m_Camera->GetPosition();
 		m_CameraBuffer.invProjectionMartix = m_Camera->GetInverseProjection();
@@ -97,6 +98,8 @@ namespace App {
 		m_ModelsBuffer = StructuredBuffer<Model>(m_Device.device.Get(), models);
 		m_SceneConfigurationBuffer = ConstantBuffer<SceneConfiguration>(m_Device.device.Get(), m_Scene->GetSceneConfiguration());
 		m_RenderDataBuffer = ConstantBuffer<RenderConfiguration>(m_Device.device.Get(), renderConfiguration);
+		m_BVHNodeBuffer = StructuredBuffer<BVHNode>(m_Device.device.Get(), bvhnodes);
+
 
 		OnRender();
 
@@ -173,9 +176,11 @@ namespace App {
 		m_MaterialsBuffer.BindCS(m_Device.deviceContext.Get(), 1);
 		m_TrianglesBuffer.BindCS(m_Device.deviceContext.Get(), 2);
 		m_ModelsBuffer.BindCS(m_Device.deviceContext.Get(), 3);
+		m_BVHNodeBuffer.BindCS(m_Device.deviceContext.Get(), 5);
 		m_CameraConstantBuffer.BindCS(m_Device.deviceContext.Get(), m_CameraBuffer, 0);
 		m_SceneConfigurationBuffer.BindCS(m_Device.deviceContext.Get(), m_Scene->GetSceneConfiguration(), 1);
 		m_RenderDataBuffer.BindCS(m_Device.deviceContext.Get(), renderConfiguration, 2);
+
 
 		const UINT stride = sizeof(Vertex);
 		const UINT offset = 0;
