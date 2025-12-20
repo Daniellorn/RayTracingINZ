@@ -52,7 +52,7 @@ namespace App {
 
 		XMVECTOR rightDirection = XMVector3Normalize(XMVector3Cross(forwardDirection, upDirection));
 
-		float speed = 5.0f;
+		float speed = 15.0f;
 		bool moved = false;
 
 		if (KEY_PRESSED('W'))

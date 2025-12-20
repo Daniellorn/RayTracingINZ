@@ -19,6 +19,7 @@ cbuffer RenderConfiguration : register(b2)
     int raysPerPixel;
     int numOfBounces;
     int accumulate;
+    int numOfNodes;
 }
 
 struct Ray
@@ -88,7 +89,8 @@ StructuredBuffer<Sphere> g_Spheres : register(t0);
 StructuredBuffer<Material> g_Materials : register(t1);
 StructuredBuffer<Triangle> g_Triangles : register(t2);
 StructuredBuffer<Model> g_Models : register(t3);
-StructuredBuffer<BVHNode> g_BVHNodes : register(t4);
+StructuredBuffer<int> g_TriIndexes : register(t4);
+StructuredBuffer<BVHNode> g_BVHNodes : register(t5);
 RWTexture2D<float4> outputTex : register(u0);
 RWTexture2D<float4> accumulationTex : register(u1);
 
@@ -197,7 +199,7 @@ float IntersectAABB(const Ray ray, const BVHNode node)
     
     if (tFar <= tNear || tFar < 0.0f)
     {
-        return MAX_FLOAT;
+        return -1.0f;
     }
     
     return tNear;
@@ -243,43 +245,105 @@ HitInfo CheckIntersection(Ray ray)
         }
     }
    
+    int stack[32];
+    int stackPtr = 0;
+    stack[stackPtr++] = 0;
     
-    for (int index = 0; index < numOfModels; index++)
+    while (stackPtr > 0)
     {
-        Model model = g_Models[index];
+        int nodeIdx = stack[--stackPtr];
+        BVHNode node = g_BVHNodes[nodeIdx];
         
-        for (int j = 0; j < model.triangleCount; j++)
+        float aabbDist = IntersectAABB(ray, node);
+        
+        if (aabbDist < 0.0f || aabbDist >= info.hitDistance)
         {
-            Triangle tri = g_Triangles[model.startTriangle + j];
+            continue;
+        }
         
-            float t = TriangleIntersection(ray, tri);
-        
-            if (t < 0.0f)
+        if (node.triangleCount > 0)
+        {
+            for (int k  = 0; k < node.triangleCount; k++)
             {
-                continue;
+                int triIdx = g_TriIndexes[node.leftFirst + k];
+                Triangle tri = g_Triangles[triIdx];
+                
+                float t = TriangleIntersection(ray, tri);
+                
+                if (t < 0.0f)
+                {
+                    continue;
+                }
+                
+                if (t < info.hitDistance)
+                {
+                    info.hitDistance = t;
+                    info.t = t;
+                    info.hitPoint = RayAt(ray, t);
+                    
+                    float3 e1 = tri.v2.xyz - tri.v1.xyz;
+                    float3 e2 = tri.v3.xyz - tri.v1.xyz;
+                    info.normal = normalize(cross(e1, e2));
+                    
+                    info.objectIndex = triIdx;
+                    info.materialIndex = 3;
+                }
             }
-        
-            if (t < info.hitDistance)
+
+        }
+        else
+        {
+            int leftChild = node.leftFirst;
+            int rightChild = node.leftFirst + 1;
+            
+            if (rightChild < numOfNodes)
             {
-                info.hitDistance = t;
-                info.t = t;
-                info.hitPoint = RayAt(ray, t);
-            
-                float3 e1 = tri.v2.xyz - tri.v1.xyz;
-                float3 e2 = tri.v3.xyz - tri.v1.xyz;
-                info.normal = normalize(cross(e1, e2));
-            
-                info.objectIndex = model.startTriangle + j;
-                info.materialIndex = model.materialIndex;
-    
+                stack[stackPtr++] = rightChild;
+            }
+            if (leftChild < numOfNodes)
+            {
+                stack[stackPtr++] = leftChild;
             }
         }
     }
     
-    if (info.hitDistance == MAX_FLOAT)
-    {
-        info = Miss();
-    }
+    
+    //for (int index = 0; index < numOfModels; index++)
+    //{
+    //    Model model = g_Models[index];
+    //    
+    //    for (int j = 0; j < model.triangleCount; j++)
+    //    {
+    //        Triangle tri = g_Triangles[model.startTriangle + j];
+    //    
+    //        float t = TriangleIntersection(ray, tri);
+    //    
+    //        if (t < 0.0f)
+    //        {
+    //            continue;
+    //        }
+    //    
+    //        if (t < info.hitDistance)
+    //        {
+    //            info.hitDistance = t;
+    //            info.t = t;
+    //            info.hitPoint = RayAt(ray, t);
+    //        
+    //            float3 e1 = tri.v2.xyz - tri.v1.xyz;
+    //            float3 e2 = tri.v3.xyz - tri.v1.xyz;
+    //            info.normal = normalize(cross(e1, e2));
+    //        
+    //            info.objectIndex = model.startTriangle + j;
+    //            info.materialIndex = model.materialIndex;
+    //
+    //        }
+    //    }
+    //}
+    
+        if (info.hitDistance == MAX_FLOAT)
+        {
+            info = Miss();
+        }
     
     return info;
 }

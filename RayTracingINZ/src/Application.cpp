@@ -64,7 +64,7 @@ namespace App {
 		scene.AddMaterial(Material(XMFLOAT4{ 0.5f, 0.7f, 0.3f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
 
         //scene.AddObject("res/models/model.obj", 3);
-#define model 1
+#define model 0
 #if model
         if (!scene.AddObject("res/models/model.obj", 3))
         {

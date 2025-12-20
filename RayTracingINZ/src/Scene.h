@@ -110,6 +110,7 @@ namespace App {
 		int raysPerPixel = 1;
 		int numOfBounces = 2;
 		int accumulate = 0;
+		int numOfNodes = 1;
 	};
 
 	class Scene
@@ -130,9 +131,9 @@ namespace App {
 		std::vector<Triangle>& GetTriangles() { return m_Triangles; }
 		std::vector<BVHNode>& GetBVHNodes() { return m_BVHNodes; }
 		std::vector<Model>& GetModels() { return m_Models; }
+		std::vector<int>& GetTriIndexes() { return m_TriIndexes; }
 		SceneConfiguration& GetSceneConfiguration() { return m_SceneConfiguration; }
 		RenderConfiguration& GetRenderConfiguration() { return m_RenderConfiguration; }
-
 		
 		void BuildBVH(int numOfTriangles);
 
@@ -146,6 +147,7 @@ namespace App {
 		std::vector<Triangle> m_Triangles;
 		std::vector<Model> m_Models;
 		std::vector<BVHNode> m_BVHNodes;
+		std::vector<int> m_TriIndexes;
 
 		uint32_t rootNodeIndex = 0;
 		uint32_t nodesUsed = 1;

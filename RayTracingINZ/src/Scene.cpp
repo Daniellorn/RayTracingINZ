@@ -35,13 +35,13 @@ namespace App {
 			return false;
 		}
 
-		for (int i = 0; i < pScene->mNumMeshes; i++)
+		for (uint32_t i = 0; i < pScene->mNumMeshes; i++)
 		{
 			aiMesh* mesh = pScene->mMeshes[i];
 
 			int startIndex = (int)m_Triangles.size();
 
-			for (int j = 0; j < mesh->mNumFaces; j++)
+			for (uint32_t j = 0; j < mesh->mNumFaces; j++)
 			{
 				const aiFace& face = mesh->mFaces[j];
 
@@ -89,9 +89,12 @@ namespace App {
 	void Scene::BuildBVH(int numOfTriangles)
 	{
 		m_BVHNodes.resize(2 * numOfTriangles - 1);
+		m_TriIndexes.resize(numOfTriangles); 
 
 		for (int i = 0; i < numOfTriangles; i++)
 		{
+			m_TriIndexes[i] = i;
+
 			Triangle& tri = m_Triangles[i];
 
 			XMVECTOR v1 = XMLoadFloat4(&tri.v1);
@@ -110,6 +113,8 @@ namespace App {
 
 		UpdateNodeBounds(rootNodeIndex);
 		SubDivide(rootNodeIndex);
+
+		m_RenderConfiguration.numOfNodes = nodesUsed;
 	}
 
 	void Scene::UpdateNodeBounds(uint32_t nodeIndex)
@@ -118,9 +123,10 @@ namespace App {
 		XMVECTOR aabbMin = XMVectorSet(1e30f, 1e30f, 1e30f, 1e30f);
 		XMVECTOR aabbMax = XMVectorSet(-1e30f, -1e30f, -1e30f, -1e30f);
 
-		for (int first = node.leftFirst, i = 0; i < node.triangleCount; i++)
+		for (uint32_t first = node.leftFirst, i = 0; i < node.triangleCount; i++)
 		{
-			Triangle& leafTri = m_Triangles[first + i];
+			int leafTriIdx = m_TriIndexes[first + i];
+			Triangle& leafTri = m_Triangles[leafTriIdx];
 
 			XMVECTOR v1 = XMLoadFloat4(&leafTri.v1);
 			XMVECTOR v2 = XMLoadFloat4(&leafTri.v2);
@@ -190,7 +196,7 @@ namespace App {
 
 		while (i <= j)
 		{
-			XMVECTOR cen = XMLoadFloat4(&m_Triangles[i].centroid);
+			XMVECTOR cen = XMLoadFloat4(&m_Triangles[m_TriIndexes[i]].centroid);
 
 			float centroidAxis = 0.0f;
 			if (axis == 0)
@@ -212,7 +218,7 @@ namespace App {
 			}
 			else
 			{
-				std::swap(m_Triangles[i], m_Triangles[j]);
+				std::swap(m_TriIndexes[i], m_TriIndexes[j]);
 				j--;
 			}
 		}
