@@ -1,0 +1,89 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{polish}
+\setmainfont{Liberation Serif}
+%\setmainfont{arial}
+\usepackage{indentfirst}
+\usepackage{setspace}
+
+
+\onehalfspacing
+\setlength{\parskip}{0.5pt}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+  \hbox{}
+  {\Large %\bfseries  
+    Uniwersytet Mikołaja Kopernika   \\
+    Wydział Matematyki i~Informatyki \\
+  }
+  \vspace{2.0 cm}
+  {\large %\bfseries
+    Daniel Nadolny \\
+  }
+  {\normalsize \mdseries
+    nr albumu: 312887 \\
+  }
+  \vspace{1.2 cm}
+  {\normalsize \mdseries
+    Praca inżynierska \\
+    na kierunku informatyka \\
+  }
+  \vspace{1.8 cm}
+  {\Huge %\bfseries 
+    Ray Tracing w czasie rzeczywistym
+  }\\
+  \vspace{1.4 cm}
+  \noindent
+  \hspace{0.5\linewidth}
+  \begin{minipage}{0.5\linewidth}
+    Opiekun pracy dyplomowej \\
+    doktor Jakub Narębski   \\
+    Wydział Matematyki i~Informatyki
+  \end{minipage}\\
+  \vspace{3.0 cm}
+  {\large 
+    Toruń 2026
+  }\\
+  \vspace{1.2 cm}
+  \begin{minipage}[t]{0.39\linewidth}
+    \centering
+    \noindent
+    Pracę przyjmuję i~akceptuję\\[0.8cm]
+    \dotfill{}\\
+    \textit{\small 
+      data i~podpis opiekuna pracy
+    }\\
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.51\linewidth}
+    \centering
+    \noindent
+    Potwierdzam złożenie pracy dyplomowej\\[0.8cm]
+    \mbox{}\hspace*{.5cm}\dotfill{}\hspace*{.5cm}\mbox{}\\
+    \textit{\small 
+      data i~podpis pracownika dziekanatu
+    }\\
+  \end{minipage}
+  \mbox{}
+  \vfill
+  \hbox{}
+\end{center}
+\thispagestyle{empty}
+\end{titlepage}
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1} % Rozpoczęcie numerowania od tego miejsca
+\tableofcontents
+
+\include{Wstep/Wstep}
+\include{Rozdzial1/Rozdzial1}
+\end{document}
