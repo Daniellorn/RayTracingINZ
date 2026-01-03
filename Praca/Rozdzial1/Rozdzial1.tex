@@ -6,6 +6,7 @@ W dalszej części będę posługiwać się takimi oznaczeniami:
 
 \begin{itemize}
     \item $a$ - wartość skalarna.
+    \item $\bm{C}$ - punkt w przestrzeni trójwymiarowej.
     \item $\bm{v}$ - wektor, w więkości przypadków $\bm{v} = (x, y, z)$.
     \item $\bm{n}$ - wektor normalny. Wektor prostopadły do danej powierzchni.
     \item $\bm{a} \cdot \bm{b}$ - iloczyn skalarny.
@@ -31,3 +32,90 @@ Minusem algorytmu jest jego złożoność obliczeniowa. Dla przykładu, bez opty
 \section{Badanie przecięcia promienia ze sferą}
 
 Test przecięcia promienia ze sferą jest jednym z najprostszych algorytmów w tej tematyce i idealnie nadaje się do przedstawienie procesu wyprowadzania takich algorytmów.
+
+Należy zacząć od zapisania równania sfery o środku w punkcie 
+$\bm{C} = (c_x, c_y, c_z)$.
+\begin{equation}
+    (x - c_x)^2 + (y - c_y)^2 + (z - c_z)^2 = r^2
+\label{eq:sphere1}
+\end{equation}
+
+Punkt $\bm{P} = (p_x, p_y, p_z)$ jest punktem leżącym na sferze. Można zapisać wektor o długości $r$ ze środka sfery do tego punktu zapisując:
+\[
+(\bm{P} - \bm{C})
+\]
+Teraz równanie sfery można zapisać tak:
+\begin{equation}
+    (\bm{P} - \bm{C}) \cdot (\bm{P} - \bm{C}) = r^2
+\label{eq:sphere2}
+\end{equation}
+
+Każdy punkt $\bm{P}$ spełniający to równanie leży na sferze.
+
+
+Szukaną wartością w tym badaniu jest zmienna $t$, na podstawie której można obliczyć współrzędne punktu $P$.
+Równanie opisujące promień o punkcie początkowym $A$ i kierunku $B$: 
+\begin{equation}
+    \bm{P}(t) = \bm{A} + t\bm{B}
+\label{eq:ray}
+\end{equation}
+Wstawiając~\eqref{eq:ray} do~\eqref{eq:sphere2}:
+\begin{equation}
+    (\bm{A} + t\bm{B} - \bm{C}) \cdot (\bm{A} + t\bm{B} - \bm{C}) = r^2
+\end{equation}
+Nie ma potrzeby rozpisywania całego iloczynu skalarnego, zamiast tego można zapisać: 
+\begin{equation}
+    (\bm{B} \cdot \bm{B})t^2 + 2t\bm{\bm{B}} \cdot (\bm{A} - \bm{C}) + (\bm{A} - \bm{C}) \cdot (\bm{A} - \bm{C}) - r^2 = 0
+\label{eq:T}
+\end{equation}
+Jest to równanie kwadratowe o współczynnikach: 
+\[
+a = \bm{B} \cdot \bm{B},
+b = 2\bm{B} \cdot (\bm{A} - \bm{C}),
+c = (\bm{A} - \bm{C}) \cdot (\bm{A} - \bm{C}) - r^2
+\]
+Wzór na paramter $t$: 
+\[
+t = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\]
+Równanie~\eqref{eq:T} może mieć rozwiązania dodatnie jak i ujemne. Silnik, aby poprawnie generować obrazy dla wielu sfer w scenie, potrzebuje wartości najbliższej i dodatniej (wartość ujemna świadczy o tym, że sfera jest za kamerą). W ramach oznaczenia przypadku braku rozwiązania równania~\eqref{eq:T} z funkcji zwracana jest wartość $-1.0$.  
+
+
+\section{Badanie przecięcia promienia z trójkątem}
+
+Autorami przedstawionego poniżej algorytmu są Tomas Möller i Ben Trumbore. W odróżnieniu od innych popularnych algorytmów szukających punkt przecięcia promienia z trójkątem, ten nie oblicza równania płaszczyzny wyznaczanej przez trójkąt, tylko opiera się na samych wierzchołkach trójkąta. Poza wierzchołkami potrzebne też są wektory normalne wierzchołków które mogą być podane razem z plikiem danego modelu (lub wcześniej obliczone).
+
+
+\begin{definition}
+Współrzędne barycentryczne na trójkącie o wierzchołkach w punktach 
+$P_0, P_1, P_2$ to trójka liczb $(w, u, v) \in \mathbb{R}$, dzięki którym możemy przedstawić każdy punkt 
+na trójkącie w formie:
+\[
+f(u,v) = (1 - u - v)\bm{P_0} + u\bm{P_1} + v\bm{P_2}.
+\]
+Liczby $(w, u, v)$ spełniają następujące warunki:
+\[
+w + u + v = 1, \quad w \ge 0, \quad u \ge 0, \quad v \ge 0.
+\]
+[DODAC RYSUNEK Z REAL TIME RENDERING]
+\end{definition}
+
+Znalezienie punktu przecięcia sprowadza się do rozwiązania układu równań: 
+\begin{equation}
+    \bm{A} + t\bm{B} = (1 - u - v)\bm{P_0} + u\bm{P_1} + v\bm{P_2}
+    \label{eq:RayTri1}
+\end{equation}
+
+Po przepisanu na postać macierzową: 
+\begin{equation}
+\begin{bmatrix}
+-\bm{B} & \bm{P_1} - \bm{P_0} & \bm{P_2} - \bm{P_0}
+\end{bmatrix}
+\begin{pmatrix}
+t \\
+u \\
+v
+\end{pmatrix}
+=
+\bm{A} - \bm{P_0}
+\end{equation}
