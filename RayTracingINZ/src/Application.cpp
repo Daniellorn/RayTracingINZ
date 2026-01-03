@@ -64,7 +64,7 @@ namespace App {
 		scene.AddMaterial(Material(XMFLOAT4{ 0.5f, 0.7f, 0.3f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
 
         //scene.AddObject("res/models/model.obj", 3);
-#define model 0
+#define model 1
 #if model
         if (!scene.AddObject("res/models/model.obj", 3))
         {
@@ -239,7 +239,7 @@ namespace App {
                     Material& material = materials[i];
                     ImGui::ColorEdit3("Albedo",&material.albedo.x);
                     ImGui::DragFloat("Roughness", &material.roughness, 0.05f, 0.0f, 1.0f);
-                    ImGui::DragFloat("Metallic", &material.glossiness, 0.05f, 0.0f, 1.0f);
+                    ImGui::DragFloat("Metallic", &material.metalness, 0.05f, 0.0f, 1.0f);
                     ImGui::ColorEdit3("Emission Color", &material.EmissionColor.x);
                     ImGui::DragFloat("Emission Power", &material.EmissionPower, 0.05f, 0.0f, FLT_MAX);
 

@@ -52,7 +52,7 @@ struct Material
     float4 albedo;
     float4 EmissionColor;
     float roughness;
-    float glossiness;
+    float metalness;
     float EmissionPower;
 };
 
@@ -359,27 +359,59 @@ float3 TraceRay(Ray ray, inout uint seed)
         
         if (info.hitDistance < 0.0f)
         {
-            //break;
+            break;
             float3 unitDir = normalize(ray.direction);
             float t = 0.5f * (unitDir.y + 1.0f);
             light += lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), t) * contribution;
             break;
         }
-        
-        //Sphere closestSphere = g_Spheres[info.objectIndex];
+
         Material material = g_Materials[info.materialIndex];
         
         light += GetEmission(material) * contribution;
         
         ray.origin = info.hitPoint + info.normal * EPSILON;
         
-        float3 diffuseDir = normalize(RandomVec3OnUnitHemiSphere(seed, info.normal));
-        float3 specularDir = reflect(ray.direction, info.normal); // ray.direction - 2.0 * dot(normal, ray.direction) * normal;
         
-        bool isSpecularBounce = material.glossiness >= RandomFloat(seed); //glossiness
-
-        ray.direction = lerp(diffuseDir, specularDir, material.roughness * int(isSpecularBounce));
-        contribution *= lerp(material.albedo.xyz, float3(1.0f, 1.0f, 1.0f), int(isSpecularBounce)); //* invPI;
+        float3 Fdielectics = float3(0.04f, 0.04f, 0.04f);
+        float3 F0 = lerp(Fdielectics, material.albedo.xyz, material.metalness);
+        
+        float cosTheta = dot(info.normal, -ray.direction);
+        float3 F = FresnelSchlick(max(cosTheta, 0.0f), F0);
+        
+        float reflectionChance = max(F.r, max(F.g, F.b));
+        float randomValue = RandomFloat(seed);
+        
+        
+        if (randomValue < reflectionChance)
+        {
+            float3 reflectionDir = reflect(ray.direction, info.normal);
+            float3 diffuseDir = normalize(RandomVec3OnUnitHemiSphere(seed, reflectionDir));
+            
+            ray.direction = lerp(reflectionDir, diffuseDir, material.roughness * material.roughness);
+            
+            contribution *= F / reflectionChance;
+        }
+        else
+        {
+            if (material.metalness >= 1.0f)
+            {
+                return light;
+            }
+            
+            ray.direction = normalize(RandomVec3OnUnitHemiSphere(seed, info.normal));
+            float3 kd = (1.0f - F) * (1.0f - material.metalness);
+            contribution *= (material.albedo.xyz * kd) / (1.0f - reflectionChance);
+        
+        }
+        
+        //float3 diffuseDir = normalize(RandomVec3OnUnitHemiSphere(seed, info.normal));
+        //float3 specularDir = reflect(ray.direction, info.normal); // ray.direction - 2.0 * dot(normal, ray.direction) * normal;
+        //
+        //bool isSpecularBounce = material.metalness >= RandomFloat(seed); //metalness
+        //
+        //ray.direction = lerp(diffuseDir, specularDir, material.roughness * int(isSpecularBounce));
+        //contribution *= lerp(material.albedo.xyz, float3(1.0f, 1.0f, 1.0f), int(isSpecularBounce)); //* invPI;
         
     }
     

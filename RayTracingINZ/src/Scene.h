@@ -21,7 +21,7 @@ namespace App {
 		DirectX::XMFLOAT4 albedo;
 		DirectX::XMFLOAT4 EmissionColor;
 		float roughness;
-		float glossiness;
+		float metalness;
 		float EmissionPower;
 	};
 

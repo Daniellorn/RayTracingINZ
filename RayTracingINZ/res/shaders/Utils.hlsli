@@ -57,4 +57,10 @@ float3 RandomVec3(inout uint seed, float min, float max)
     );
 }
 
+
+float3 FresnelSchlick(float cosThetha, float3 F0)
+{
+    return F0 + (1.0f - F0) * pow(max(1.0f - cosThetha, 0.0f), 5.0f);
+}
+
 #endif
