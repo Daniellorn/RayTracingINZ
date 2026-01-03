@@ -18,6 +18,14 @@
 # Mono auto generated files
 mono_crash.*
 
+#LaTeX files
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

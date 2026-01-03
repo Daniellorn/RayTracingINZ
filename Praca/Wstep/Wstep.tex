@@ -1,0 +1,15 @@
+\chapter*{Wstęp}
+\addcontentsline{toc}{chapter}{Wstęp}
+\markboth{Wstęp}{Wstęp}
+\label{chap:wstep}
+
+
+W 2018 roku NVIDIA przedstawiła światu nową generację kart graficznych nazwanych RTX. Od tego roku każda kolejna seria począwszy od serii 20 do teraz (seria 50) jest wyposażona w tzw. RT Cores. Rdzenie RT są specjalnie stworzone do przyspieszania obliczeń związanych ze śledzeniem promieni (dalej będę używał nazwy ray tracing), w szczególności przy testowaniu przecięcia promienia z trójkątem i przechodzenia przez strukturę danych zwaną BVH (ang. bounding   volume hierarchy). Odpowiednikiem RT Cores w kartach graficznych od AMD są "Ray accelerators". Ray tracing jest   
+bardzo wymagającym algorytmem pod względem obliczeniowym. Dodanie powyższych rozwiązań sprzętowych do GPU pozwoliły programistom implementowanie ray tracingu w czasie rzeczywistym np. w grach, gdzie  obecnie w jednej scenie może pojawić się kilka milionów trójkątów (dotychczas ray tracing wykorzystywany był głownie w filmach).  
+
+
+W ramach pracy inżynierskiej stworzony został silnik graficzny przedstawiający ray tracing w czasie rzeczywistym, napisany jest w języku C++, wykorzystując bibliotekę DirectX 11 i win32. Interfejs użytkownika stworzony został za pomocą biblioteki ImGui. 
+
+
+Pierwszy rozdział tej pracy będzie poświęcony przedstawieniu podstaw ray tracingu, od opisania idei algorytmu do wyprowadzenia dwóch podstawowych procedur badania przecięć promienia z obiektami w scenie (promień-sfera i promień-trójkąt). W tym rozdziale poruszone będzie również zagadnienie optymalizacji silnika używając struktury danych BVH. W następnym rozdziale zostanie opisane zagadnienie materiałów. Materiały są jednym z najważniejszych tematów w ray tracingu, jak i ogólnie w grafice komputerowej, jeśli chodzi o aspekty wizualne.
+W trzecim rozdziale opisany będzie stworzony silnik i implementacje przedstawionych wcześniej algorytmów. W końcowej części pracy przedstawione zostaną wyniki testów wydajnościowych programu. Testy były przeprowadzone przed optymalizacją silnika i po optymalizacji, aby wykazać różnice wydajności. 
