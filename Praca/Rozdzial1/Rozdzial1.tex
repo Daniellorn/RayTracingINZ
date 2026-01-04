@@ -54,25 +54,25 @@ Każdy punkt $\bm{P}$ spełniający to równanie leży na sferze.
 
 
 Szukaną wartością w tym badaniu jest zmienna $t$, na podstawie której można obliczyć współrzędne punktu $P$.
-Równanie opisujące promień o punkcie początkowym $A$ i kierunku $B$: 
+Równanie opisujące promień o punkcie początkowym $O$ i kierunku $D$: 
 \begin{equation}
-    \bm{P}(t) = \bm{A} + t\bm{B}
+    \bm{P}(t) = \bm{O} + t\bm{D}
 \label{eq:ray}
 \end{equation}
 Wstawiając~\eqref{eq:ray} do~\eqref{eq:sphere2}:
 \begin{equation}
-    (\bm{A} + t\bm{B} - \bm{C}) \cdot (\bm{A} + t\bm{B} - \bm{C}) = r^2
+    (\bm{O} + t\bm{D} - \bm{C}) \cdot (\bm{O} + t\bm{D} - \bm{C}) = r^2
 \end{equation}
 Nie ma potrzeby rozpisywania całego iloczynu skalarnego, zamiast tego można zapisać: 
 \begin{equation}
-    (\bm{B} \cdot \bm{B})t^2 + 2t\bm{\bm{B}} \cdot (\bm{A} - \bm{C}) + (\bm{A} - \bm{C}) \cdot (\bm{A} - \bm{C}) - r^2 = 0
+    (\bm{D} \cdot \bm{D})t^2 + 2t\bm{\bm{D}} \cdot (\bm{O} - \bm{C}) + (\bm{O} - \bm{C}) \cdot (\bm{O} - \bm{C}) - r^2 = 0
 \label{eq:T}
 \end{equation}
 Jest to równanie kwadratowe o współczynnikach: 
 \[
-a = \bm{B} \cdot \bm{B},
-b = 2\bm{B} \cdot (\bm{A} - \bm{C}),
-c = (\bm{A} - \bm{C}) \cdot (\bm{A} - \bm{C}) - r^2
+a = \bm{D} \cdot \bm{D},
+b = 2\bm{D} \cdot (\bm{O} - \bm{C}),
+c = (\bm{O} - \bm{C}) \cdot (\bm{O} - \bm{C}) - r^2
 \]
 Wzór na paramter $t$: 
 \[
@@ -83,7 +83,7 @@ Równanie~\eqref{eq:T} może mieć rozwiązania dodatnie jak i ujemne. Silnik, a
 
 \section{Badanie przecięcia promienia z trójkątem}
 
-Autorami przedstawionego poniżej algorytmu są Tomas Möller i Ben Trumbore. W odróżnieniu od innych popularnych algorytmów szukających punkt przecięcia promienia z trójkątem, ten nie oblicza równania płaszczyzny wyznaczanej przez trójkąt, tylko opiera się na samych wierzchołkach trójkąta. Poza wierzchołkami potrzebne też są wektory normalne wierzchołków które mogą być podane razem z plikiem danego modelu (lub wcześniej obliczone).
+Autorami przedstawionego poniżej algorytmu są Tomas Möller i Ben Trumbore \cite{MollerTrumbore}. W odróżnieniu od innych popularnych algorytmów szukających punkt przecięcia promienia z trójkątem, ten nie oblicza równania płaszczyzny wyznaczanej przez trójkąt, tylko opiera się na samych wierzchołkach trójkąta. Istnieją szybsze algorytmy np. algorytm Douga Baldwina i Michaela Webera \cite{BaldwinWeber}, ale wymagają one dodatkowych informacji razem z trójkątami. 
 
 
 \begin{definition}
@@ -102,14 +102,16 @@ w + u + v = 1, \quad w \ge 0, \quad u \ge 0, \quad v \ge 0.
 
 Znalezienie punktu przecięcia sprowadza się do rozwiązania układu równań: 
 \begin{equation}
-    \bm{A} + t\bm{B} = (1 - u - v)\bm{P_0} + u\bm{P_1} + v\bm{P_2}
+    \bm{O} + t\bm{D} = (1 - u - v)\bm{P_0} + u\bm{P_1} + v\bm{P_2}
     \label{eq:RayTri1}
 \end{equation}
+
+Gdzie $\bm{O}= (o_x, o_y, o_z)$ to punkt początkowy promienia, a $\bm{D} = (d_x, d_y, d_z)$ to kierunek.
 
 Po przepisanu na postać macierzową: 
 \begin{equation}
 \begin{bmatrix}
--\bm{B} & \bm{P_1} - \bm{P_0} & \bm{P_2} - \bm{P_0}
+-\bm{D} & \bm{P_1} - \bm{P_0} & \bm{P_2} - \bm{P_0}
 \end{bmatrix}
 \begin{pmatrix}
 t \\
@@ -117,5 +119,78 @@ u \\
 v
 \end{pmatrix}
 =
-\bm{A} - \bm{P_0}
+\bm{O} - \bm{P_0}
 \end{equation}
+
+Pomocnicze oznaczenia: $\bm{e_1} = \bm{P_1} - \bm{P_0}, \bm{e_2} = \bm{P_2} - \bm{P_0}, \bm{s} = \bm{O} - \bm{P_0}$
+
+Używając oznaczeń układ równań ma postać: 
+\begin{equation}
+    \begin{aligned}
+        -d_xt + e_{1x}u + e_{2x}v = s_x \\
+        -d_yt + e_{1y}u + e_{2y}v = s_y \\
+        -d_zt + e_{1z}u + e_{2z}v = s_z 
+    \end{aligned}        
+\end{equation}
+
+Wtedy macierz główna układu ma postać:
+\begin{equation}
+    M = 
+    \begin{bmatrix}
+        -d_x & e_{1x} & e_{2x} \\
+        -d_y & e_{1y} & e_{2y} \\
+        -d_z & e_{1z} & e_{2z}
+    \end{bmatrix}
+\end{equation}
+
+Do rozwiązania układu równań można wykorzystać metodę Cramera: 
+\begin{equation}
+    \begin{pmatrix}
+    t \\
+    u \\
+    v
+    \end{pmatrix}
+=
+\frac{1}{\det(-\bm{D}, \bm{e_1}, \bm{e_2})}
+\begin{pmatrix}
+    \det(\bm{s}, \bm{e_1}, \bm{e_2}) \\
+    \det(\bm{-D}, \bm{s}, \bm{e_2}) \\
+    \det(\bm{-D}, \bm{e_1}, \bm{s})
+\end{pmatrix}
+\end{equation}
+
+Z własności iloczynu mieszanego wiadomo, że: $(\bm{a} \times \bm{b}) \cdot \bm{c} = \det(\bm{a}, \bm{b}, \bm{c})$
+Wtedy równanie można zapisać tak (zmieniając kolumny macierzy wyznacznik zmienia znak na przeciwny): 
+\begin{equation}
+    \begin{pmatrix}
+    t \\
+    u \\
+    v
+    \end{pmatrix}
+=
+\frac{1}{(\bm{B} \times \bm{e_2}) \cdot \bm{e_1}}
+\begin{pmatrix}
+    (\bm{s} \times \bm{e_1}) \cdot \bm{e_2} \\
+    (\bm{D} \times \bm{e_2}) \cdot \bm{s} \\
+    (\bm{s} \times \bm{e_1}) \cdot \bm{D}
+\end{pmatrix}
+\end{equation}
+
+Wprowadzając kolejne oznaczenia, dla uproszczenia: $\bm{q} = \bm{D} \times \bm{e_2} \\ \bm{r} = \bm{s} \times \bm{e_1}$
+Otrzymane równanie:
+\begin{equation}
+    \begin{pmatrix}
+    t \\
+    u \\
+    v
+    \end{pmatrix}
+    =
+    \frac{1}{\bm{q} \cdot \bm{e_1}}
+    \begin{pmatrix}
+        \bm{r} \cdot \bm{e_2} \\
+        \bm{q} \cdot \bm{s} \\
+        \bm{r} \cdot \bm{D}
+    \end{pmatrix}
+\end{equation}
+
+W implementacji funkcja zwraca parametr $t$, dzięki niemu znany jest punkt przecięcia.

@@ -1,0 +1,6 @@
+\chapter{Optymalizacja}
+\label{chap:optymalizacja}
+
+\section{Bounding Volume Hierarchy}
+
+W stworzonym silniku graficznym w danej chwili jest kilka stałych wartości: rozdzielczość (np. 1920x1080 pikseli), liczba odbić promienia, liczba promieni na piksel i liczba trójkątów w scenie. Jedyną zmienną, którą można optymalizować jest liczba testów przecięcia promień-trójkąt (dla uproszczenia algorytmu sfery są pominięte). Do takiej optymalizacji można posłużyć się tzw. drzewami BVH - Bounding Volume Hierarchy.

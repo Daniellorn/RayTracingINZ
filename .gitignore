@@ -24,6 +24,11 @@ mono_crash.*
 *.fls
 *.synctex.gz
 *.toc
+*.bbl
+*.bcf
+*.blg
+*.xml
+
 
 
 # Build results

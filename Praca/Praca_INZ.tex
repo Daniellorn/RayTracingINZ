@@ -11,7 +11,13 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
+\usepackage[
+  backend=biber,
+  style=numeric,
+  sorting=none
+]{biblatex}
 
+\addbibresource{bibliografia.bib}
 \newtheorem{definition}{Definicja}[section]
 
 \SetLanguageKeys{polish}{indentfirst=true}
@@ -94,4 +100,7 @@
 
 \include{Wstep/Wstep}
 \include{Rozdzial1/Rozdzial1}
+\include{Rozdzial2/Rozdzial2}
+
+\printbibliography[heading=bibintoc]
 \end{document}
