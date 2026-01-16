@@ -125,6 +125,15 @@ namespace App {
 		void AddMaterial(const Material& material);
 
 		bool AddObject(const std::filesystem::path& filepath, int materialIndex);
+
+		void ClearModelArray()
+		{
+			m_Triangles.clear();
+			m_BVHNodes.clear();
+			m_TriIndexes.clear();
+			nodesUsed = 1;
+			rootNodeIndex = 0;
+		}
 		
 		std::vector<Sphere>& GetSpheres() { return m_Objects; }
 		std::vector<Material>& GetMaterials() { return m_Materials; }

@@ -359,7 +359,7 @@ float3 TraceRay(Ray ray, inout uint seed)
         
         if (info.hitDistance < 0.0f)
         {
-            break;
+            //break;
             float3 unitDir = normalize(ray.direction);
             float t = 0.5f * (unitDir.y + 1.0f);
             light += lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), t) * contribution;

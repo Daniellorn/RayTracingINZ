@@ -286,7 +286,11 @@ namespace App {
 	}
 	void Renderer::UpdateSceneBuffers(Scene& scene)
 	{
-		m_SpheresBuffer.Update(m_Device.deviceContext.Get(), scene.GetSpheres());
-		m_MaterialsBuffer.Update(m_Device.deviceContext.Get(), scene.GetMaterials());
+		m_SpheresBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetSpheres());
+		m_MaterialsBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetMaterials());
+		m_TrianglesBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetTriangles());
+		m_ModelsBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetModels());
+		m_BVHNodeBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetBVHNodes());
+		m_TriIndexesBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetTriIndexes());
 	}
 }

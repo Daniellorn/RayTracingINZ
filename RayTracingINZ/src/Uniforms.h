@@ -105,14 +105,51 @@ namespace App {
 
 		}
 
-		void Update(ID3D11DeviceContext* deviceContext, const std::vector<T>& data)
+		void Update(ID3D11DeviceContext* deviceContext, ID3D11Device* device, const std::vector<T>& data)
 		{
-			D3D11_MAPPED_SUBRESOURCE mappedResource;
-			deviceContext->Map(m_StructuredBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-			memcpy(mappedResource.pData, data.data(), sizeof(T) * data.size());
-			deviceContext->Unmap(m_StructuredBuffer.Get(), 0);
+			if (data.empty())
+			{
+				return;
+			}
+
+			D3D11_BUFFER_DESC desc;
+			m_StructuredBuffer->GetDesc(&desc);
+
+			if (desc.ByteWidth < sizeof(T) * data.size())
+			{
+				desc.ByteWidth = (UINT)(sizeof(T) * data.size());
+				m_StructuredBuffer.Reset();
+
+				D3D11_SUBRESOURCE_DATA initData = { data.data(), 0, 0 };
+				device->CreateBuffer(&desc, &initData, m_StructuredBuffer.GetAddressOf());
+				UpdateSRV(device);
+			}
+			else
+			{
+				D3D11_MAPPED_SUBRESOURCE mappedResource;
+				CHECK(deviceContext->Map(m_StructuredBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
+				memcpy(mappedResource.pData, data.data(), sizeof(T) * data.size());
+				deviceContext->Unmap(m_StructuredBuffer.Get(), 0);
+			}
 
 			m_Data = data;
+		}
+
+		void UpdateSRV(ID3D11Device* device)
+		{
+			m_SRV.Reset();
+
+			D3D11_BUFFER_DESC bufferDesc;
+			m_StructuredBuffer->GetDesc(&bufferDesc);
+
+			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+			srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+			srvDesc.Buffer.FirstElement = 0;
+			srvDesc.Buffer.NumElements = bufferDesc.ByteWidth / sizeof(T);
+
+			CHECK(device->CreateShaderResourceView(m_StructuredBuffer.Get(), &srvDesc, m_SRV.GetAddressOf()));
+
 		}
 
 		void BindPS(ID3D11DeviceContext* deviceContext, uint32_t slot)

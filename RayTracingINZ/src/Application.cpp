@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <algorithm>
 #include <thread>
+#include <filesystem>
 
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
@@ -64,20 +65,27 @@ namespace App {
 		scene.AddMaterial(Material(XMFLOAT4{ 0.5f, 0.7f, 0.3f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
 
         //scene.AddObject("res/models/model.obj", 3);
-#define model 1
-#if model
-        if (!scene.AddObject("res/models/model.obj", 3))
+
+        for (const auto& entry : std::filesystem::directory_iterator(s_FolderPath))
         {
-        
-            return;
+            if (entry.is_regular_file())
+            {
+                m_FileNames.push_back(entry.path().filename().string());
+            }
         }
-#else
-        if (!scene.AddObject("res/models/stanford_dragon_pbr.glb", 3))
+
+        int selectedModelIndex = -1;
+        if (!m_FileNames.empty())
         {
-        
-            return;
+            selectedModelIndex = 0;
+
+            if (!scene.AddObject("res/models/model.obj", 3))
+            {
+
+                return;
+            }
+            
         }
-#endif
 
         scene.BuildBVH((int)scene.GetTriangles().size());
 
@@ -115,6 +123,8 @@ namespace App {
         bool reset = false;
         bool accumulate = false;
         bool stopRendering = false;
+
+
 
         Timer timer;
 
@@ -254,6 +264,7 @@ namespace App {
 
                 ImGui::Begin("Settings");
                 ImGui::Text("Last render: %.3fms", m_LastRenderTime);
+                ImGui::Text("Window size: %d x %d", (int)viewportPanelSize.x, (int)viewportPanelSize.y);
                 ImGui::DragInt("Max bounce", &renderConfiguration.numOfBounces, 1, 1, 50);
                 ImGui::DragInt("Max samples", &renderConfiguration.raysPerPixel, 1, 1, 100);
                 
@@ -267,6 +278,38 @@ namespace App {
                     reset = true;
                     renderConfiguration.frameIndex = 1;
                 };
+
+                const char* currentModelName = (selectedModelIndex >= 0 && selectedModelIndex < m_FileNames.size())
+                    ? m_FileNames[selectedModelIndex].c_str()
+                    : "Choose model";
+
+                if (ImGui::BeginCombo("Model", currentModelName))
+                {
+                    for (int i = 0; i < m_FileNames.size(); i++)
+                    {
+                        bool isSelected = selectedModelIndex == i;
+                        if (ImGui::Selectable(m_FileNames[i].c_str(), isSelected))
+                        {
+                            if (selectedModelIndex != i)
+                            {
+                                selectedModelIndex = i;
+
+                                scene.ClearModelArray();
+                                scene.AddObject(std::filesystem::path("res/models") / m_FileNames[i], 3);
+                                scene.BuildBVH((int)scene.GetTriangles().size());
+
+                                m_Renderer->UpdateSceneBuffers(scene);
+
+                            }
+                            
+                        }
+                        if (isSelected)
+                        {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
 
                 ImGui::End();
 
