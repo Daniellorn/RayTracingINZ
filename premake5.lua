@@ -39,7 +39,8 @@ project "RayTracingINZ"
     includedirs
     {
         "%{prj.name}/vendor/ImGui",
-        "%{prj.name}/vendor/Assimp",
+        "%{prj.name}/vendor/Assimp/include",
+        "%{prj.name}/vendor/Assimp/build/include",
         "%{prj.name}/vendor/Stb_Image"
     }
 
@@ -80,9 +81,11 @@ project "RayTracingINZ"
     filter "configurations:Release"
         defines { "NDEBUG" }
         optimize "On"
-        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/ReleaseAssimp/assimp-vc143-mt.lib" }
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/build/lib/Release/assimp-vc143-mt.lib" }
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/build/contrib/zlib/Release/zlibstatic.lib" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }
         symbols "On"
-        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/DebugAssimp/assimp-vc143-mtd.lib" }
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/build/lib/Debug/assimp-vc143-mtd.lib" }
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/build/contrib/zlib/Debug/zlibstaticd.lib" }

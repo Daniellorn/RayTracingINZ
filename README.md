@@ -13,4 +13,4 @@ Następnie
 git clone --recursive <repo-url>
 ```
 
-Uruchamiamy skrypt GenerateProject.bat. Skrypt zbuduje solucje projektu którą otwieramy w środowisku Visual Studio. 
+Uruchamiamy skrypt GenerateProject.bat. Skrypt zbuduje solucje projektu którą otwieramy w środowisku Visual Studio i bibliotekę Assimp. 

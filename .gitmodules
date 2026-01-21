@@ -2,3 +2,6 @@
 	path = RayTracingINZ/vendor/ImGui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "RayTracingINZ/vendor/Assimp"]
+	path = RayTracingINZ/vendor/Assimp
+	url = https://github.com/assimp/assimp.git
