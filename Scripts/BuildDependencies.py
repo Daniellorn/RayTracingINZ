@@ -43,7 +43,7 @@ def Build_Assimp(build_type):
     flags = " ".join(cmake_flags)
     Run_Command(f'cmake CMakeLists.txt -S "{ASSIMP_DIR}" -B "{BUILD_DIR}" {flags}')
 
-    num_cores = multiprocessing.cpu_count()
+    num_cores = multiprocessing.cpu_count() - 1
     Run_Command(f'cmake --build "{BUILD_DIR}" --config {build_type} --parallel {num_cores}')
 
 
