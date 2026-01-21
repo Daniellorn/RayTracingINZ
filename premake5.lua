@@ -80,9 +80,9 @@ project "RayTracingINZ"
     filter "configurations:Release"
         defines { "NDEBUG" }
         optimize "On"
-        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/Release/assimp-vc143-mt.lib" }
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/ReleaseAssimp/assimp-vc143-mt.lib" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }
         symbols "On"
-        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/Debug/assimp-vc143-mtd.lib" }
+        links { "%{wks.location}/RayTracingINZ/vendor/Assimp/lib/DebugAssimp/assimp-vc143-mtd.lib" }
