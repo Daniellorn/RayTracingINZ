@@ -1,2 +1,78 @@
-\chapter{Materiały}
+\chapter{Materiały i modele oświetlenia}
 \label{chap:materialy}
+
+\section{Materiały w grafice komputerowej}
+
+W rzeczywistości zachowanie światła padającego na dany obiekt będzie zależało od materiału z którego ten obiekt jest stworzony np. światło padające na metal będzie odbijało się inaczej od światła padającego na plastik. W grafice komputerowej chcemy symulować właściwości różnych materiałów za pomocą tzw. modeli oświetlenia.
+
+
+Model oświetlenia, to matematyczny opis zachowania światła w scenie. Określa w jaki sposób obiekty powinny być renderowane tj. w jaki sposób światło odbija się od powierzchni obiektów. Modele oświetlenia możemy podzielić na:
+\begin{itemize}
+    \item Modele oświetlenia lokalnego (local illumination) - kolor danej powierzchni zależy tylko od materiału, z którego powierzchnia jest zrobiona i źródła światła.
+    \item Modele oświetlenia globalnego (global illumination) - kolor danej powierzchni zależy od materiału, z którego powierzchnia jest zrobiona, źródła światła i światła odbitego od innych obiektów. \cite{realTimeRendering}
+\end{itemize} 
+
+
+\section{Model oświetlenia lokalnego}
+
+[TU JAKIEŚ SKRINY ZE SWOJEGO SILNIKA]
+
+Jednym z najpopularniejszych modeli oświetlenia lokalnego jest model Phonga (ang. Phong reflection model). Model Phonga składa się z trzech komponentów: 
+\begin{itemize}
+    \item Ambient - światło otoczenia. W tym algorytmie wpływ innych obiektów na jasność i kolor danego modelu (global illumination) jest symulowane poprzez dodanie pewnej stałej wartości do jasności i koloru obiektu.
+    \item Diffuse - światło rozproszone. Najważniejszy komponent oświetlenia, światło padające na powierzchnię odbija się we wszystkich kierunkach równomiernie \cite{pbrbook}
+    \item Specular - światło zwierciadlane, odblask.
+\end{itemize}
+
+Wzór przedstawiający ostateczne oświetlenie danego punktu \cite{phong}:
+
+\begin{equation}
+    I = I_{a}k_{a} + k_{d}I_{i}(\bm{n} \cdot \bm{l}) + k_{s}I_{i}(\bm{r} \cdot \bm{v})^s
+\end{equation}
+
+Gdzie: 
+\begin{itemize}
+    \item $I_{a}$ - natężenie światła otoczenia.
+    \item $I_{i}$ - natężenie światła padającego.
+    \item $k_{a}$ - współczynnik odbicia światła otoczenia. Własność materiału.
+    \item $k_{d}$ - współczynnik odbicia rozproszonego. Określa jak bardzo obiekt jest matowy. Własność materiału.
+    \item $k_{s}$ - współczynnik odbicia zwierciadlanego. Określa jak bardzo obiekt jest błyszczący. Własność materiału. 
+    \item $\bm{n}$ - wektor normalny do powierzchni.
+    \item $\bm{l}$ - znormalizowany wektor kierunku do źródła światła od badanego punktu.
+    \item $\bm{r}$ - wektor kierunku odbicia światła obliczany według wzoru: \[r = 2.0(\bm{l} \cdot \bm{n}) \cdot \bm{n} - \bm{l} \]
+    \item $\bm{v}$ - znormalizowany wektor kierunku do kamery.
+    \item $s$ - współczynnik przedstawiający rozmiar odblasku.
+\end{itemize}
+
+W przypadku wielu źródeł światła w scenie wzór przyjmuje postać: 
+
+\begin{equation}
+    I = I_{a}k_{a} + \sum_{i}^{lights}k_{d}I_{i}(\bm{n} \cdot \bm{l_{i}}) + \sum_{i}^{lights}k_{s}I_{i}(\bm{r_{i}} \cdot \bm{v})^s
+\end{equation}
+
+Ulepszeniem tego modelu jest Model Blinna-Phonga w którym oblicza się tzw. halfway vector $\bm{h} = \frac{\bm{l} + \bm{v}}{\|\bm{l + v}\|}$ i zamienia się $\bm{r} \cdot \bm{v}$ na $\bm{n} \cdot \bm{h}$
+
+
+
+\section{Model oświetlenia globalnego}
+[WPROWADZIĆ RADIOMETRIĘ]
+[TU JAKIEŚ SKRINY ZE SWOJEGO SILNIKA]
+
+W modelach oświetlenia globalnego (ang. \textit{global illumination}) do obliczenia natężenia światła (koloru piksela) w danym punkcie bierze się pod uwagę źródło światła jak i otoczenie - światło odbite od innych powierzchni. Efekty takie jak: realistyczne cienie, odbicia i obiekty transparentne są implementowane za pomocą algorytmów globalnego oświetlenia.
+    
+
+Algorytmy global illumination oparte są na tzw. \textit{rendering equation} \cite{realTimeRendering}:
+\begin{equation}
+    L_{o}(\bm{p}, \bm{v}) = L_{e}(\bm{p}, \bm{v}) + \int_{\Omega}f(\bm{l}, \bm{v})\bm{L_{o}}(r(\bm{p}, \bm{l}), \bm{-l})(\bm{n} \cdot \bm{l})^{+}d\bm{l}
+\label{eq:rendering}
+\end{equation}
+
+gdzie:
+\begin{itemize}
+    \item $\bm{L_{o}(\bm{p}, \bm{v})}$ - światło wychodzące od punktu $p$ w kierunku $\bm{v}$ (kierunek kamery).
+    \item $\bm{L_{e}(\bm{p}, \bm{v})}$ - światło emitowane przez powierzchnię w punkcie $p$ w kierunku $\bm{v}$.
+    \item $\Omega$ - to powierzchnia półsfery, która znajduje się nad punktem dla którego oblicza się wychodzące światło. Całkowanie po tej półsferze odpowiada sumowaniu wkładu światła docierającego ze wszystkich możliwych kierunków.
+    \item $f(\bm{l}, \bm{v})$ - to tzw. \textit{bidirectional reflectance distribution function} (dalej BRDF). BRDF to funkcja opisująca w jaki sposób światło nadchodzące z kierunku $\bm{l}$ jest odbijane w kierunku $\bm{v}$ przez dany materiał.
+    \item $\bm{L_{o}}(r(\bm{p}, \bm{l}), \bm{-l})$ - 
+    \item $(\bm{n} \cdot \bm{l})^{+}$ - 
+\end{itemize}
