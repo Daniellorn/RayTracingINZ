@@ -184,6 +184,8 @@ namespace App {
 		m_SceneConfigurationBuffer.BindCS(m_Device.deviceContext.Get(), m_Scene->GetSceneConfiguration(), 1);
 		m_RenderDataBuffer.BindCS(m_Device.deviceContext.Get(), renderConfiguration, 2);
 
+		m_Device.deviceContext->CSSetShaderResources(6, 1, m_EnvironmentMap.SRV.GetAddressOf());
+		m_Device.deviceContext->CSSetSamplers(0, 1, m_EnvironmentMap.sampler.GetAddressOf());
 
 		const UINT stride = sizeof(Vertex);
 		const UINT offset = 0;
@@ -292,5 +294,47 @@ namespace App {
 		m_ModelsBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetModels());
 		m_BVHNodeBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetBVHNodes());
 		m_TriIndexesBuffer.Update(m_Device.deviceContext.Get(), m_Device.device.Get(), scene.GetTriIndexes());
+	}
+	void Renderer::EnvironmentTexture(float* data, int width, int height, int channels)
+	{
+		m_EnvironmentMap.texDesc.Width = width;
+		m_EnvironmentMap.texDesc.Height = height;
+		m_EnvironmentMap.texDesc.MipLevels = 1;
+		m_EnvironmentMap.texDesc.ArraySize = 1;
+		m_EnvironmentMap.texDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		m_EnvironmentMap.texDesc.CPUAccessFlags = 0;
+		m_EnvironmentMap.texDesc.MiscFlags = 0;
+		m_EnvironmentMap.texDesc.SampleDesc.Count = 1;
+		m_EnvironmentMap.texDesc.SampleDesc.Quality = 0;
+		m_EnvironmentMap.texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		m_EnvironmentMap.texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+		D3D11_SUBRESOURCE_DATA initData = {};
+		initData.pSysMem = data;
+		initData.SysMemPitch = width * 16;
+		initData.SysMemSlicePitch = 0;
+
+
+		CHECK(m_Device.device->CreateTexture2D(&m_EnvironmentMap.texDesc, &initData, m_EnvironmentMap.renderTexture.GetAddressOf()));
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = m_EnvironmentMap.texDesc.Format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		CHECK(m_Device.device->CreateShaderResourceView(m_EnvironmentMap.renderTexture.Get(), &srvDesc, m_EnvironmentMap.SRV.GetAddressOf()));
+
+		m_EnvironmentMap.samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		m_EnvironmentMap.samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		m_EnvironmentMap.samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		m_EnvironmentMap.samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		m_EnvironmentMap.samplerDesc.MipLODBias = 0.0f;
+		m_EnvironmentMap.samplerDesc.MaxAnisotropy = 1;
+		m_EnvironmentMap.samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		m_EnvironmentMap.samplerDesc.MinLOD = 0;
+		m_EnvironmentMap.samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		m_Device.device->CreateSamplerState(&m_EnvironmentMap.samplerDesc, m_EnvironmentMap.sampler.GetAddressOf());
 	}
 }

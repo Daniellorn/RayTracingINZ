@@ -9,6 +9,9 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "Camera.h"
 
 using namespace DirectX;
@@ -64,7 +67,9 @@ namespace App {
 		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 0.5f, 0.7f, 0.3f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 0.0f));
 
-        //scene.AddObject("res/models/model.obj", 3);
+        
+        int width, height, nrComponents;
+        float* skyTex = stbi_loadf("res/SkyTex/rogland_clear_night_4k.hdr", &width, &height, &nrComponents, 4);
 
         for (const auto& entry : std::filesystem::directory_iterator(s_FolderPath))
         {
@@ -102,6 +107,7 @@ namespace App {
         m_Renderer->InitRenderer(camera, scene);
 		auto device = m_Renderer->GetDevice();
 
+        m_Renderer->EnvironmentTexture(skyTex, width, height, nrComponents);
 		// Setup Platform/Renderer backends
 		ImGui_ImplWin32_Init(m_WindowHandle);
 		ImGui_ImplDX11_Init(device.device.Get(), device.deviceContext.Get());

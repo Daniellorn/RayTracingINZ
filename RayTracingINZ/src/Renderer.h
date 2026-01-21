@@ -64,6 +64,8 @@ namespace App {
 			deviceContext->ClearUnorderedAccessViewFloat(UAV.Get(), clearColor);
 		}
 
+		void EnvironmentTexture(float* data, int width, int height, int channels);
+
 	private:
 		HWND m_WindowHandle;
 		int m_Width;
@@ -74,6 +76,7 @@ namespace App {
 		Texture m_CSTexture;
 		Texture m_PSTexture;
 		Texture m_AccumulationTexture;
+		Texture m_EnvironmentMap;
 		VertexShader m_VS;
 		PixelShader m_PS;
 		ComputeShader m_CS;

@@ -33,13 +33,14 @@ project "RayTracingINZ"
         "%{prj.name}/vendor/ImGui/backends/imgui_impl_win32.cpp",
         "%{prj.name}/vendor/ImGui/backends/imgui_impl_win32.h",
         "%{prj.name}/vendor/ImGui/misc/cpp/**.cpp",
-        "%{prj.name}/vendor/ImGui/misc/cpp/**.h",
+        "%{prj.name}/vendor/ImGui/misc/cpp/**.h"
     }
 
     includedirs
     {
         "%{prj.name}/vendor/ImGui",
-        "%{prj.name}/vendor/Assimp"
+        "%{prj.name}/vendor/Assimp",
+        "%{prj.name}/vendor/Stb_Image"
     }
 
     links
