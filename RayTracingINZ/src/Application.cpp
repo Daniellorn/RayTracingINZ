@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <thread>
 #include <filesystem>
+#include <array>
+#include <numeric>
 
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
@@ -59,8 +61,8 @@ namespace App {
         Scene scene({ 4, 2 });
 		scene.AddObject(Sphere({-1.7f, -0.7f, -5.1f, 1.0f}, 1.0f, 4, static_cast<int>(Type::DIFFUSE)));
         scene.AddObject(Sphere({ 0.0f, -0.6f, 0.0f, 1.0f }, 1.0f, 1, static_cast<int>(Type::DIFFUSE)));
-        scene.AddObject(Sphere({ -17.0f, 5.3f, 0.0f, 1.0f }, 4.0f, 2, static_cast<int>(Type::DIFFUSE)));
-		scene.AddObject(Sphere({0.0f, -43.5f, 0.0f, 1.0f}, 42.1f, 0, static_cast<int>(Type::DIFFUSE)));
+        scene.AddObject(Sphere({ -47.8f, 478.8f, -229.1f, 1.0f }, 334.0f, 2, static_cast<int>(Type::DIFFUSE)));
+		scene.AddObject(Sphere({0.0f, -430.5f, 0.0f, 1.0f}, 429.0f, 0, static_cast<int>(Type::DIFFUSE)));
 		scene.AddMaterial(Material(XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.0f }, XMFLOAT4(1.0f, 0.0f, 1.0f, 0.0f), 1.0f, 0.0f, 0.0f));
 		scene.AddMaterial(Material(XMFLOAT4{ 1.0f, 0.0f, 1.0f, 0.0f }, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, 0.0f, 5.0f));
@@ -130,8 +132,9 @@ namespace App {
         bool accumulate = false;
         bool stopRendering = false;
 
-
-
+        std::array<float, 3000> frameRateHistory;
+        int index = 0;
+        bool performance = false;
         Timer timer;
 
 		while (msg.message != WM_QUIT)
@@ -279,6 +282,40 @@ namespace App {
                     renderConfiguration.accumulate = accumulate ? 1 : 0;
                 }
 
+                ImGui::SameLine();
+
+                ImGui::Checkbox("Performance", &performance);
+
+                if (performance)
+                {
+                    if (index < frameRateHistory.size())
+                    {
+                        frameRateHistory[index] = m_LastRenderTime;
+                        index++;
+                    }
+                    else
+                    {
+                        float sum = std::accumulate(frameRateHistory.begin(), frameRateHistory.end(), 0.0f);
+
+                        float average = sum / frameRateHistory.size();
+
+                        ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_FirstUseEver);
+                        ImGui::Begin("Performance result", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+                        ImGui::Separator();
+                        ImGui::Text("Average Frame Time (ms): %.3f", average);
+                        ImGui::Text("Frame count: %zu", frameRateHistory.size());
+
+                        if (ImGui::Button("Close and reset"))
+                        {
+                            index = 0;
+                            performance = false;
+                        }
+
+                        ImGui::End();
+                    }
+                }
+
                 if (ImGui::Button("Reset"))
                 {
                     reset = true;
@@ -305,7 +342,6 @@ namespace App {
                                 scene.BuildBVH((int)scene.GetTriangles().size());
 
                                 m_Renderer->UpdateSceneBuffers(scene);
-
                             }
                             
                         }

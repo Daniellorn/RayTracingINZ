@@ -310,7 +310,7 @@ HitInfo CheckIntersection(Ray ray)
                     info.materialIndex = 3;
                 }
             }
-
+    
         }
         else
         {
@@ -327,6 +327,38 @@ HitInfo CheckIntersection(Ray ray)
             }
         }
     }
+    
+    //for (int index = 0; index < numOfModels; index++)
+    //{
+    //    Model model = g_Models[index];
+    //    
+    //    for (int j = 0; j < model.triangleCount; j++)
+    //    {
+    //        Triangle tri = g_Triangles[model.startTriangle + j];
+    //    
+    //        TriangleHit t = TriangleIntersection(ray, tri);
+    //    
+    //        if (t.t < 0.0f)
+    //        {
+    //            continue;
+    //        }
+    //    
+    //        if (t.t < info.hitDistance)
+    //        {
+    //            info.hitDistance = t.t;
+    //            info.t = t.t;
+    //            info.hitPoint = RayAt(ray, t.t);
+    //        
+    //            float3 e1 = tri.v2.xyz - tri.v1.xyz;
+    //            float3 e2 = tri.v3.xyz - tri.v1.xyz;
+    //            info.normal = normalize(cross(e1, e2));
+    //        
+    //            info.objectIndex = model.startTriangle + j;
+    //            info.materialIndex = model.materialIndex;
+    //
+    //        }
+    //    }
+    //}
     
     if (info.hitDistance == MAX_FLOAT)
     {
@@ -347,7 +379,7 @@ float3 TraceRay(Ray ray, inout uint seed)
         
         if (info.hitDistance < 0.0f)
         {
-            ////break;
+            break;
             //float3 unitDir = normalize(ray.direction);
             //float t = 0.5f * (unitDir.y + 1.0f);
             //light += lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), t) * contribution;
@@ -394,7 +426,7 @@ float3 TraceRay(Ray ray, inout uint seed)
             if (NdotL > 0.0f)
             {
                 float G = G_Smith(material.roughness, NdotV, NdotL);
-                float3 weight = (F * G * VdotH) / max(NdotH * NdotV, EPSILON);
+                float3 weight = (F * G * VdotH) / (4 * max(NdotH * NdotV, EPSILON));
                 
                 contribution *= weight / reflectionChance;
                 ray.direction = L;

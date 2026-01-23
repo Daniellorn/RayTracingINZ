@@ -11,7 +11,5 @@ struct VSinput
 float4 main(VSinput input) : SV_Target
 {
     float4 hdrTex = inputTex.Sample(samp, input.uv);
-    
-    //return float4(mapped, 1.0f);
     return hdrTex;
 } 

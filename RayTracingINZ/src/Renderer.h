@@ -82,7 +82,7 @@ namespace App {
 		ComputeShader m_CS;
 		D3D11_VIEWPORT m_ViewPort;
 
-		Microsoft::WRL::ComPtr< ID3D11Texture2D> m_BackbufferTexture;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_BackbufferTexture;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTarget;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_BackBufferRenderTarget;
 
