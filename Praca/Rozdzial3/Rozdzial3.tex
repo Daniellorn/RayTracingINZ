@@ -55,7 +55,6 @@ Ulepszeniem tego modelu jest Model Blinna-Phonga w którym oblicza się tzw. hal
 
 
 \section{Model oświetlenia globalnego}
-[WPROWADZIĆ RADIOMETRIĘ?]
 [TU JAKIEŚ SKRINY ZE SWOJEGO SILNIKA]
 
 W modelach oświetlenia globalnego (ang. \textit{global illumination}) do obliczenia natężenia światła (koloru piksela) w danym punkcie bierze się pod uwagę źródło światła jak i otoczenie - światło odbite od innych powierzchni. Efekty takie jak: realistyczne cienie, odbicia i obiekty transparentne są implementowane za pomocą algorytmów globalnego oświetlenia.
@@ -81,4 +80,10 @@ gdzie:
 Analitycznie równanie \ref{eq:rendering} jest niemożliwe do rozwiązania (poza bardzo prostymi scenami), ponieważ aby rozwiązać równanie dla punktu $p$ trzeba znać wynik dla punktu wcześniejszego $p'$, powstaje nieskończona rekurencja na nieskończonej liczbie kierunków z których światło dochodzi do punktu $p$.
 
 Równanie renderingu rozwiązuje się metodami numerycznymi np. metodą monte-carlo. 
-[DALEJ COOK TORRANCE]
+
+
+Przykładem modelu oświetlenia, który jest wykorzystywany w implementacji global illumination (jak i local illumination) jest model Cook-Torrance \cite{cookTorrance}. Model bazuje na tzw. \textit{microfacet theory}, polega ona na spostrzeżeniu, że w rzeczywistości nie ma idealnie gładkich powierzchni (najbliżej jest lustro). Poziom nierówności powierzchni opisuje się parametrem \textit{roughness}. 
+
+
+Funkcja BRDF modelu Cook-Torrance: 
+
