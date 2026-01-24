@@ -328,6 +328,8 @@ HitInfo CheckIntersection(Ray ray)
         }
     }
     
+    //BEZ BVH
+    
     //for (int index = 0; index < numOfModels; index++)
     //{
     //    Model model = g_Models[index];
@@ -379,7 +381,7 @@ float3 TraceRay(Ray ray, inout uint seed)
         
         if (info.hitDistance < 0.0f)
         {
-            break;
+            //break;
             //float3 unitDir = normalize(ray.direction);
             //float t = 0.5f * (unitDir.y + 1.0f);
             //light += lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), t) * contribution;
@@ -426,7 +428,7 @@ float3 TraceRay(Ray ray, inout uint seed)
             if (NdotL > 0.0f)
             {
                 float G = G_Smith(material.roughness, NdotV, NdotL);
-                float3 weight = (F * G * VdotH) / (4 * max(NdotH * NdotV, EPSILON));
+                float3 weight = (F * G * VdotH) / (max(NdotH * NdotV, EPSILON));
                 
                 contribution *= weight / reflectionChance;
                 ray.direction = L;

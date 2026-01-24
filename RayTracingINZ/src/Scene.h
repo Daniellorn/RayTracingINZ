@@ -14,8 +14,6 @@ namespace App {
 		EMISSIVE
 	};
 
-
-	// TODO: Na kolory zrobiæ jakiœ enum.
 	struct Material
 	{
 		DirectX::XMFLOAT4 albedo;
@@ -34,15 +32,6 @@ namespace App {
 		int type;
 
 		auto operator<=>(const Sphere& other) const = default;
-	};
-
-
-	struct Lights
-	{
-		DirectX::XMFLOAT4 position;
-		DirectX::XMFLOAT4 color;
-		float radius;
-		float intensity;
 	};
 
 	struct Triangle
@@ -65,31 +54,6 @@ namespace App {
 		// LeftFirst - jesli traingleCount = 0, to leftFirst jest indeksem lewego potomka. 
 		// Jesli triangleCount > 0 to znaczy ze jestesmy w lisciu i leftFirst jest indeksem pierwszego trojkata.
 	};
-
-	//struct BVHNode2
-	//{
-	//	union
-	//	{
-	//		struct
-	//		{
-	//			DirectX::XMFLOAT3 aabbMin;
-	//			uint32_t leftFirst;
-	//		};
-	//
-	//		DirectX::XMFLOAT4 aabbmin;
-	//	};
-	//
-	//	union
-	//	{
-	//		struct
-	//		{
-	//			DirectX::XMFLOAT3 aabbMax;
-	//			uint32_t triangleCount;
-	//		};
-	//
-	//		DirectX::XMFLOAT4 aabbmax;
-	//	};
-	//};
 
 	struct Model
 	{
