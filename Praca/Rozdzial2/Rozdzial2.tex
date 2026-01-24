@@ -9,8 +9,14 @@ W stworzonym silniku graficznym w danej chwili jest kilka stałych wartości: ro
 Idea algorytmu jest prosta - pomijać te trójkąty których promień na pewno nie przetnie. Bez optymalizacji, aby sprawdzić czy promień przecina się z jakimś trójkątem, trzeba przejść przez całą tablicę trójkątów modelu i każdy przetestować, w przypadku użycia BVH większość pomijamy badając tylko te najbliższe punktowi przecięcia.
 
 \section{Zasada działania BVH}
-W BVH dzielimy dany model na prostopadłościany zwane "bounding box". Proces podziału rozpoczyna się od korzenia (ang. root) jako prostopadłościan okalający cały obiekt (lub całą scenę), następnie rekurencyjnie dzielimy model na coraz to mniejsze prostopadłościany, aż do zadanej granicy np. 2 trójkątów w jednym boxie. BVH ma strukturę drzewa binarnego (tak jest w stworzonym silniku), gdzie w wierzchołkach mieszczą się kolejne prostopadłościany z podziału, a w liściach znajdują się trójkąty \cite{realTimeRendering}. [OBRAZEK POKAZUJĄCY BVH]
+W BVH dzielimy dany model na prostopadłościany zwane "bounding box". Proces podziału rozpoczyna się od korzenia (ang. root) jako prostopadłościan okalający cały obiekt (lub całą scenę), następnie rekurencyjnie dzielimy model na coraz to mniejsze prostopadłościany, aż do zadanej granicy np. 2 trójkątów w jednym boxie. BVH ma strukturę drzewa binarnego (tak jest w stworzonym silniku), gdzie w wierzchołkach mieszczą się kolejne prostopadłościany z podziału, a w liściach znajdują się trójkąty \cite{realTimeRendering}. 
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{BVH} 
+    \caption{Obrazek przedstawiający BVH}\cite{bvh}
+    \label{fig:BVH}
+\end{figure}
 
 W strukturze BVH używa się różnych typów "bounding box", w ray tracingu popularnym wyborem są "axis-aligned bounding box" (AABB). AABB tworzone są poprzez wyznaczenie dwóch punktów: prawego górnego punktu i lewego dolnego punktu. Maksymalny punkt AABB wyznaczany jest poprzez wyszukanie największych wartości na każdej osi ze zbioru trójkątów, każdy trójkąt ma 3 punkty. Punkt minimalny wyznaczany jest analogicznie poprzez szukanie najmniejszej wartości.
 
