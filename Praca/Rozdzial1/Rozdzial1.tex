@@ -16,12 +16,19 @@ W dalszej części będę posługiwać się takimi oznaczeniami:
 
 \section{Algorytm ray tracingu}
 
-Algorytm ray tracingu znany jest już od 1979 roku, kiedy John Turner Whitted opublikował artykuł "An improved illumination model for shaded display" opisujący rekurencyjny ray tracing [PRZYPIS]. 
+Algorytm ray tracingu znany jest już od 1979 roku, kiedy John Turner Whitted opublikował artykuł "An improved illumination model for shaded display" opisujący rekurencyjny ray tracing \cite{whitted}. 
 
-Ideą algorytmu jest naśladowanie światła. W opisie zachowania się światła i jego oddziaływania z materią korzysta się z teorii falowej i optyki geometrycznej. W rzeczywistości światło porusza się po liniach prostych, od źródła np. Słońca. Ray tracing działa odwrotnie, tzn. źródłem promieni jest "oko" kamery i od niego wychodzi światło w generowaną scenę, ponieważ jak w rzeczywistości mózg człowieka "renderuje" obraz korzystając tylko z tych promieni, które padają na siatkówkę w oku [PRZYPIS]. Gdy wystrzelony z kamery promień uderza w jakiś obiekt punkt przecięcia staje się punktem początkowym kolejnego promienia (rekurencyjna natura algorytmu). [TUTAJ WSTAWIĆ OBRAZEK PRZEDSTAWIAJĄCY ALGORYTM].
+Ideą algorytmu jest naśladowanie światła. W opisie zachowania się światła i jego oddziaływania z materią korzysta się z teorii falowej i optyki geometrycznej. W rzeczywistości światło porusza się po liniach prostych, od źródła np. Słońca. Ray tracing działa odwrotnie, tzn. źródłem promieni jest "oko" kamery i od niego wychodzi światło w generowaną scenę, ponieważ jak w rzeczywistości mózg człowieka "renderuje" obraz korzystając tylko z tych promieni, które padają na siatkówkę w oku. Gdy wystrzelony z kamery promień uderza w jakiś obiekt punkt przecięcia staje się punktem początkowym kolejnego promienia (rekurencyjna natura algorytmu)\cite{realTimeRendering}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{SchematRT} 
+    \caption{Rysunek przedstawia ideę ray tracingu. Promienie wychodzą z kamery i uderzają w obiekty, następnie generowane są kolejne promienie, które w pewnym momencie trafiają do źródła światła.}
+    \label{fig:RT}
+\end{figure}
 
-Należy się teraz zastanowić, w jaki sposób obiekty w naturze "dostają" swój kolor. Innymi słowy - dlaczego pomidor jest czerwony? Obserwując eksperyment przedstawiający rozszczepienie światła pryzmatem, lub tęczę, możemy zauważyć, że białe światło rozszczepia się na kilka barw (w uproszczeniu). Dzieje się tak, ponieważ barwy światła mają różne długości fal. Zakres długości fal dla światła widzialnego przez człowieka wynosi: ~380-780 nanometrów. Gdy promienie ze źródła uderzą w jakiś obiekt, (np. w pomidor) to materiał obiektu wchłonie w siebie pewną część światła o danej długości, a odbije resztę. Przykładowy pomidor odbije głównie barwę czerwoną, czyli fale o długości w zakresie ~620-780 nm, następnie mózg interpretuje daną długość fali na odpowiedni kolor. W ray tracingu procedura jest podobna, jedynym dodatkiem do światła w scenie jest jego źródło, reszta oświetlenia pochodzi od promieni odbitych od obiektów. [DODAJ PRZYPIS I OBRAZEK ZAKRESU]  
+Należy się teraz zastanowić, w jaki sposób obiekty w naturze "dostają" swój kolor. Innymi słowy - dlaczego pomidor jest czerwony? Obserwując eksperyment przedstawiający rozszczepienie światła pryzmatem, lub tęczę, możemy zauważyć, że białe światło rozszczepia się na kilka barw (w uproszczeniu). Dzieje się tak, ponieważ barwy światła mają różne długości fal. Zakres długości fal dla światła widzialnego przez człowieka wynosi: \approx380-780 nanometrów\cite{fuw}. Gdy promienie ze źródła uderzą w jakiś obiekt, (np. w pomidor) to materiał obiektu wchłonie w siebie pewną część światła o danej długości, a odbije resztę. Przykładowy pomidor odbije głównie barwę czerwoną, czyli fale o długości w zakresie ~620-780 nm, następnie mózg interpretuje daną długość fali na odpowiedni kolor. W ray tracingu procedura jest podobna, jedynym dodatkiem do światła w scenie jest jego źródło, reszta oświetlenia pochodzi od promieni odbitych od obiektów.
+
 
 Symulowanie światła pozwala programistom na uzyskanie szczegółowych i poprawnych fizycznie efektów takich jak: odbicie, refrakcja itd. Wcześniej, przed erą ray tracingu w czasie rzeczywistym, programiści musieli korzystać z różnych sztuczek aby zaimplementować te efekty, dla przykładu odbicia tworzone były poprzez zrenderowanie danego obiektu drugi raz ale odwrotnie w np. kałurzy, lustrze. Korzystając z ray tracingu efekt odbicia jest dużo prostszy w implementacji.  
 

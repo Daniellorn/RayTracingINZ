@@ -15,9 +15,7 @@ Model oświetlenia, to matematyczny opis zachowania światła w scenie. Określa
 
 \section{Model oświetlenia lokalnego}
 
-[TU JAKIEŚ SKRINY ZE SWOJEGO SILNIKA]
-
-Jednym z najpopularniejszych modeli oświetlenia lokalnego jest model Phonga (ang. Phong reflection model). Model Phonga składa się z trzech komponentów: 
+Jednym z najpopularniejszych modeli oświetlenia lokalnego jest model Phonga (ang. Phong reflection model). Model Phonga składa się z trzech komponentów:
 \begin{itemize}
     \item Ambient - światło otoczenia. W tym algorytmie wpływ innych obiektów na jasność i kolor danego modelu (global illumination) jest symulowane poprzez dodanie pewnej stałej wartości do jasności i koloru obiektu.
     \item Diffuse - światło rozproszone. Najważniejszy komponent oświetlenia, światło padające na powierzchnię odbija się we wszystkich kierunkach równomiernie \cite{pbrbook}
@@ -55,7 +53,6 @@ Ulepszeniem tego modelu jest Model Blinna-Phonga w którym oblicza się tzw. hal
 
 
 \section{Model oświetlenia globalnego}
-[TU JAKIEŚ SKRINY ZE SWOJEGO SILNIKA]
 
 W modelach oświetlenia globalnego (ang. \textit{global illumination}) do obliczenia natężenia światła (koloru piksela) w danym punkcie bierze się pod uwagę źródło światła jak i otoczenie - światło odbite od innych powierzchni. Efekty takie jak: realistyczne cienie, odbicia i obiekty transparentne są implementowane za pomocą algorytmów globalnego oświetlenia.
     
@@ -82,8 +79,54 @@ Analitycznie równanie \ref{eq:rendering} jest niemożliwe do rozwiązania (poza
 Równanie renderingu rozwiązuje się metodami numerycznymi np. metodą monte-carlo. 
 
 
-Przykładem modelu oświetlenia, który jest wykorzystywany w implementacji global illumination (jak i local illumination) jest model Cook-Torrance \cite{cookTorrance}. Model bazuje na tzw. \textit{microfacet theory}, polega ona na spostrzeżeniu, że w rzeczywistości nie ma idealnie gładkich powierzchni (najbliżej jest lustro). Poziom nierówności powierzchni opisuje się parametrem \textit{roughness}. 
+Przykładem modelu oświetlenia, który jest wykorzystywany w implementacji global illumination (jak i local illumination) jest model Cook-Torrance \cite{cookTorrance}. Model bazuje na tzw. \textit{microfacet theory}, polega ona na spostrzeżeniu, że w rzeczywistości nie ma idealnie gładkich powierzchni (najbliżej jest lustro), złożone są z "mikropowierzchni", które skierowane są pod różnym kątem. Poziom nierówności powierzchni opisuje się parametrem \textit{roughness}. 
 
 
-Funkcja BRDF modelu Cook-Torrance: 
+Funkcja BRDF modelu Cook-Torrance dla odbić lustrzanych\cite{ue4}: 
 
+\begin{equation}
+    f_{cookTorrance} = \frac{DFG}{4(\bm{n} \cdot \bm{l})(\bm{n} \cdot \bm{v})}
+\end{equation}
+
+gdzie:
+\begin{itemize}
+    \item $D$ - Funkcja rozkładu mikropowierzchni. Określa ona jak dużo ścianek skierowana jest w taki sposób aby odbić nadchodzący promień w stronę kamery.
+    \item $F$ - Współczynnik Fresnela, określa stosunek światła odbitego do światła załamanego.
+    \item $G$ - Funkcja określająca atenuacje (tłumienie) światła wynikające z nakładania się mikropowierzchni na siebie (mikropowierzchnie mogą się zasłaniać).
+    \item $\bm{n}$ - wektor normalny.
+    \item $\bm{l}$ - wektor do źródła światła. W tym przypadku jest to kierunek z którego przychodzi światło, tj. wektor odbicia.
+    \item $\bm{v}$ - wektor do kamery.
+\end{itemize}
+
+
+Wybór funkcji $D$ i $G$ może być różny, najpopularniejszą funkcją $D$ jest funkcja Trowbridge-Reitz (GGX), a $G$ to funkcja Smitha.
+
+\begin{align}
+    D_{GGX}(\bm{n}, \bm{h}, \alpha) &= \frac{\alpha^2}{\pi((\bm{n} \cdot \bm{h})^2(\alpha^2 - 1) + 1)^2} \\[10pt]
+    G(\bm{n}, \bm{v}, \bm{l}) &= G_1(\bm{n}, \bm{v}) \cdot G_1(\bm{n}, \bm{l}) \\[10pt]
+    G_1(\bm{n}, \bm{v}) &= \frac{\bm{n} \cdot \bm{v}}{(\bm{n} \cdot \bm{v})(1 - k) + k}
+\end{align}
+
+gdzie: 
+
+\begin{itemize}
+    \item $\alpha$ to parametr materiału \textit{roughness}
+    \item $k$ = $\frac{(\alpha + 1)^2}{8}$
+\end{itemize}
+
+Współczynnik Fresnela w większości przypadków przybliża się tzw. przybliżeniem Schlick'a\cite{Schlick}.
+\begin{equation}
+    F_{Schlick} = F_0 + (1 - F_0)(1 - \cos(\theta))^5
+\end{equation}
+
+$F_0$ to współczynnik odbicia światła padającego prostopadle do powierzchni. W silniku przyjmuje się bazową wartość $f_0 = 0.04$.
+
+
+Przedstawiony powyżej wzór służy do opisania odbić lustrzanych (ang. specular reflection). Aby opisać światło rozproszone (ang. diffuse) można posłużyć się dowolnym modelem np. standardowym modelem Lamberta. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Cienie} 
+    \caption{Przykład globalnego oświetlenia - miękkie cienie. W silniku nie zaimplementowano świateł, są tylko materiały emisyjne.}
+    \label{fig:shadows}
+\end{figure}
