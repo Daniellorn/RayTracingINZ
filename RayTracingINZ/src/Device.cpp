@@ -14,8 +14,14 @@ namespace App {
 
 		D3D_FEATURE_LEVEL featureLevelArray[2] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
 
+		UINT flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+
+#ifdef _DEBUG
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
 		CHECK(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 
-			D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_DEBUG,
+			flags,
 			featureLevelArray, 2, D3D11_SDK_VERSION,
 			&result.device, &result.featureLevel, &result.deviceContext));
 
