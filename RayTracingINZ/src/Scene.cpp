@@ -83,7 +83,6 @@ namespace App {
 		}
 
 		return true;
-
 	}
 
 	void Scene::BuildBVH(int numOfTriangles)
