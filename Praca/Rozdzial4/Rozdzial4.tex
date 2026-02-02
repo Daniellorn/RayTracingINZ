@@ -2,19 +2,28 @@
 \label{chap:engine}
 
 \section{Biblioteki}
+\todo[inline]{Myślę, że warto używane narzędzia i~biblioteki opisać w~osobnym rozdziale, a~nie w~podrozdziale ,,Prezentacja silnika''}
 
 \begin{itemize}
-    \item  \textbf{DirectX 11} jest to biblioteka graficzna wykorzystywana głównie do tworzenia gier komputerowych (np. Baldur's Gate 3, Wiedźmin 3) lub innych aplikacji graficznych. Biblioteka została stworzona w 2009 roku przez firmę Microsoft. Dostępna jest tylko na komputerach z systemem windows i konsolach Xbox. W silniku wykorzystywana jest do grafiki poprzez shadery \footnote{Shader to program działający na karcie graficznej} takie jak: compute shader, pixel shader i vertex shader.
-    \item \textbf{Win32} jest to interfejs programistyczny systemu Windows. Zawiera w sobie funkcje umożliwiające działanie programów w systemie. Okno prezentowanego silnika zostało stworzone za pomocą tej biblioteki.
-    \item \textbf{ImGui} biblioteka wykorzystywana do tworzenia interfejsu użytkownika. Napisana jest w myśl paradygmatu "Immediate Mode GUI" (IMGUI), który głównie polega na tym, że interfejs jest cały czas odświeżany, nie przechowuje on stanu między klatkami przez co jest zawsze zsynchronizowany z danymi. Biblioteka ta jest również łatwiejsza w obsłudze niż np. biblioteka QT. 
-    \item \textbf{Assimp} Open Asset Import Library jest to biblioteka umożliwiająca łatwe ładowanie modeli 3D w różnych formatach np. obj, glb. Napisana jest w języku C/C++.
-    \item \textbf{Stb\_Image} biblioteka wykorzystywana do ładowania tekstur w różnych formatach.
+\item
+  \todo{Wtedy każdy z~tych punktów byłby osobną sekcją}
+  \textbf{DirectX 11}\todo{Tu można by dodać cytowanie} jest to biblioteka graficzna wykorzystywana głównie do tworzenia gier komputerowych (np. Baldur's Gate 3, Wiedźmin 3) lub innych aplikacji graficznych. Biblioteka została stworzona w 2009 roku przez firmę Microsoft. Dostępna jest tylko na komputerach z systemem \todoarea{,,Windows'' lub ,,MS Windows''}{windows} i konsolach Xbox. \todo{Nowy akapit (jeśli sekcja)}W silniku wykorzystywana jest do grafiki poprzez shadery \footnote{Shader to program działający na karcie graficznej\todo[inline]{Jak treść zostanie rozbudowana, to to nie musi być footnote}} takie jak: compute shader, pixel shader i vertex shader.
+    \item \textbf{Win32} jest to interfejs programistyczny systemu Windows. Zawiera w sobie funkcje umożliwiające działanie programów w systemie. Okno prezentowanego silnika zostało stworzone za pomocą tej biblioteki.\todo{Jak ImGui ma się do Win32?}
+    \item \textbf{ImGui}\todo{Tu należy dodać cytowanie} biblioteka wykorzystywana do tworzenia interfejsu użytkownika. Napisana jest w myśl paradygmatu "Immediate Mode GUI" (IMGUI), który głównie polega na tym, że interfejs jest cały czas odświeżany, nie przechowuje on stanu między klatkami przez co jest zawsze zsynchronizowany z danymi. Biblioteka ta jest również łatwiejsza w obsłudze niż np. biblioteka \todoarea{Qt}{QT}. 
+    \item \textbf{Assimp}\todo{Tu albo trochę dalej należy dodać cytowanie} Open Asset Import Library jest to biblioteka umożliwiająca łatwe ładowanie modeli 3D w różnych formatach np. obj, glb.\todo{Z jakich formatów korzysta program?} Napisana jest w języku \todoarea{Albo C, albo C++}{C/C++}.
+    \item \textbf{Stb\_Image}\todo{Tu należy dodać cytowanie} biblioteka wykorzystywana do ładowania tekstur w \todoarea{a w jakich formatach są używane?}{różnych formatach}.\todo{W jakim języku napisana?}
 \end{itemize}
+\todo[inline]{Brakuje informacji o~tym, skąd zostały wzięte modele 3D, i~skąd zostały wzięte używane tekstury.}
+\item[inline]{Może warto napisać z~jakiego IDE (i~z~jakich pluginów) się korzystało, i~jak rozwiązano zależności i/lub budowanie: premake, CMake, MSBuild, Conan, Build2, vcpkg, Meson, Bazel, make/Makefile.}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=1\textwidth]{Interfejs} 
-    \caption{Zdjęcie przedstawia interfejs silnika.}
+    \caption{
+      Zdjęcie przedstawia interfejs silnika.
+      \todo[inline]{Raczej: ,,Interfejs stworzonego w~ramach pracy silnika ray-tracing''}
+      \todo[inline]{To nie częścią opisu narzędzi i~technologii}
+    }
     \label{fig:interfejs}
 \end{figure}
 
