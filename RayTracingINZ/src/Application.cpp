@@ -71,7 +71,9 @@ namespace App {
 
         
         int width, height, nrComponents;
-        float* skyTex = stbi_loadf("res/SkyTex/rogland_clear_night_4k.hdr", &width, &height, &nrComponents, 4);
+        //float* skyTex = stbi_loadf("res/SkyTex/rogland_clear_night_4k.hdr", &width, &height, &nrComponents, 4);
+        //float* skyTex = stbi_loadf("res/SkyTex/sunny_country_road_4k.hdr", &width, &height, &nrComponents, 4);
+        float* skyTex = stbi_loadf("res/SkyTex/sunny_vondelpark_4k.hdr", &width, &height, &nrComponents, 4);
 
         for (const auto& entry : std::filesystem::directory_iterator(s_FolderPath))
         {

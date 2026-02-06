@@ -34,18 +34,36 @@ float3 RandomUnitVec(inout uint seed)
 }
 
 
+//float3 RandomVec3OnUnitHemiSphere(inout uint seed, float3 normal)
+//{
+//    float3 randomvec = RandomUnitVec(seed);
+//
+//    if (dot(randomvec, normal) > 0.0f)
+//    {
+//        return randomvec;
+//    }
+//    else
+//    {
+//        return -randomvec;
+//    }
+//}
+
+
 float3 RandomVec3OnUnitHemiSphere(inout uint seed, float3 normal)
 {
-    float3 randomvec = RandomUnitVec(seed);
-
-    if (dot(randomvec, normal) > 0.0f)
+    float z = RandomFloat(seed) * 2.0f - 1.0f;
+    float a = RandomFloat(seed) * 2.0f * PI;
+    float r = sqrt(1.0f - z * z);
+    float x = r * cos(a);
+    float y = r * sin(a);
+    
+    float3 randomVec = float3(x, y, z);
+    if (dot(randomVec, normal) < 0.0f)
     {
-        return randomvec;
+        return -randomVec;
     }
-    else
-    {
-        return -randomvec;
-    }
+    
+    return randomVec;
 }
 
 float3 RandomVec3(inout uint seed, float min, float max)
