@@ -1,74 +1,89 @@
-\chapter{Optymalizacja}
+\chapter{Optymalizacja - Bounding Volume Hierarchy}
 \label{chap:optymalizacja}
 
-\section{Bounding Volume Hierarchy}
+\section{Optymalizacja przecinania promienia z trójkątem}
 
-W stworzonym silniku graficznym w danej chwili jest kilka stałych wartości: rozdzielczość (np. 1920x1080 pikseli), liczba odbić promienia, liczba promieni na piksel i liczba trójkątów w scenie. Jedyną zmienną, którą można optymalizować jest liczba testów przecięcia promień-trójkąt (dla uproszczenia algorytmu sfery są pominięte). Do takiej optymalizacji można posłużyć się tzw. drzewami BVH - Bounding Volume Hierarchy. 
-
+Wydajność renderowania scen za pomocą ray tracingu zależy od kilku parametrów: rozdzielczości obrazu, liczby odbić promienia, liczby promieni na piksel i liczby trójkątów w scenie. Wzrost tych wartości przekłada się na wyższą szczegółowość sceny, jednak zdecydowanie zwiększa koszt jej wyrenderowania. Głównym polem optymalizacji jest minimalizacja liczby testów przecięcia promień-trójkąt. Do takiej optymalizacji można posłużyć się tzw. drzewami BVH -- Bounding Volume Hierarchy.
 
 Idea algorytmu jest prosta - pomijać te trójkąty których promień na pewno nie przetnie. Bez optymalizacji, aby sprawdzić czy promień przecina się z jakimś trójkątem, trzeba przejść przez całą tablicę trójkątów modelu i każdy przetestować, w przypadku użycia BVH większość pomijamy badając tylko te najbliższe punktowi przecięcia.
 
 \section{Zasada działania BVH}
-W BVH dzielimy dany model na prostopadłościany zwane "bounding box". Proces podziału rozpoczyna się od korzenia (ang. root) jako prostopadłościan okalający cały obiekt (lub całą scenę), następnie rekurencyjnie dzielimy model na coraz to mniejsze prostopadłościany, aż do zadanej granicy np. 2 trójkątów w jednym boxie. BVH ma strukturę drzewa binarnego (tak jest w stworzonym silniku), gdzie w wierzchołkach mieszczą się kolejne prostopadłościany z podziału, a w liściach znajdują się trójkąty \cite{realTimeRendering}. 
+W BVH dzielimy dany model na prostopadłościany zwane ,,bounding box". Proces podziału rozpoczyna się od korzenia (ang. root) jako prostopadłościan okalający cały obiekt (lub całą scenę), następnie rekurencyjnie dzielimy model na coraz to mniejsze prostopadłościany, aż do zadanej granicy np. 2 trójkątów w jednym boxie. BVH ma strukturę drzewa binarnego (tak jest w stworzonym silniku), gdzie w wierzchołkach mieszczą się kolejne prostopadłościany z podziału, a w liściach znajdują się trójkąty \cite{realTimeRendering}. 
 
-\begin{figure}[H]
+\begin{figure}[tbph]
     \centering
-    \includegraphics[width=1\textwidth]{BVH} 
-    \caption{Obrazek przedstawiający BVH}\cite{bvh}
+    \includegraphics[width=1\textwidth]{BVH2} 
+    \caption{Obrazek przedstawiający BVH. Podpunkt $a$ przedstawia objętości (boxy), a w nich obiekty. Podpunkt $b$ pokazuje drzewo BVH stworzone na podstawie sceny z podpunktu $a$~\cite{pbrbook}.}
     \label{fig:BVH}
 \end{figure}
 
-W strukturze BVH używa się różnych typów "bounding box", w ray tracingu popularnym wyborem są "axis-aligned bounding box" (AABB). AABB tworzone są poprzez wyznaczenie dwóch punktów: prawego górnego punktu i lewego dolnego punktu. Maksymalny punkt AABB wyznaczany jest poprzez wyszukanie największych wartości na każdej osi ze zbioru trójkątów, każdy trójkąt ma 3 punkty. Punkt minimalny wyznaczany jest analogicznie poprzez szukanie najmniejszej wartości.
+W strukturze BVH używa się różnych typów ,,bounding box", w ray tracingu popularnym wyborem są ,,axis-aligned bounding box" (AABB). AABB tworzone są poprzez wyznaczenie dwóch punktów: prawego górnego punktu i lewego dolnego punktu. Maksymalny punkt AABB wyznaczany jest poprzez wyszukanie największych wartości na każdej osi ze zbioru trójkątów, każdy trójkąt ma 3 punkty. Punkt minimalny wyznaczany jest analogicznie poprzez szukanie najmniejszej wartości.
 
-Można zapisać to tak: 
+Pseudokod algorytmu wyznaczania prostopadłościanu ograniczającego (axis aligned bounding box) dla zbioru trójkątów pokazany jest jako algorytm.~\ref{algo:aabbAlgo}. 
 
 \begin{algorithm}
 \caption{Wyznaczanie AABB}
+\label{algo:aabbAlgo}
 \begin{algorithmic}
 \STATE Triangles $\gets$ [ $(v_1, v_2, v_3)$, $\ldots$ ]
+\STATE $\point{p_{\text{min}}} \gets (\infty, \infty, \infty)$
+\STATE $\point{p_{\text{max}}} \gets (-\infty, -\infty, -\infty)$
 \FOR{each triangle $t$ in Triangles}
-    \STATE $p_{\min} \gets \big( \min(\bm{P_{min}}, \bm{t.v_1})) $
-    \STATE $p_{\min} \gets \big( \min(\bm{P_{min}}, \bm{t.v_2})) $
-    \STATE $p_{\min} \gets \big( \min(\bm{P_{min}}, \bm{t.v_3})) $
-    \STATE $p_{\max} \gets \big( \max(\bm{P_{max}}, \bm{t.v_1})) $ 
-    \STATE $p_{\max} \gets \big( \max(\bm{P_{max}}, \bm{t.v_2})) $
-    \STATE $p_{\max} \gets \big( \max(\bm{P_{max}}, \bm{t.v_3})) $
+    \STATE $\point{p_{\text{min}}} \gets \bigr( \min(\bm{P_{min}}, \bm{t.v_1})) $
+    \STATE $\point{p_{\text{min}}} \gets \bigr( \min(\bm{P_{min}}, \bm{t.v_2})) $
+    \STATE $\point{p_{\text{min}}} \gets \bigr( \min(\bm{P_{min}}, \bm{t.v_3})) $
+    \STATE $\point{p_{\text{max}}} \gets \bigr( \max(\bm{P_{max}}, \bm{t.v_1})) $ 
+    \STATE $\point{p_{\text{max}}} \gets \bigr( \max(\bm{P_{max}}, \bm{t.v_2})) $
+    \STATE $\point{p_{\text{max}}} \gets \bigr( \max(\bm{P_{max}}, \bm{t.v_3})) $
 \ENDFOR
 \end{algorithmic}
 \end{algorithm}
 
-Aby stworzyć strukturę drzewa należy teraz podjąć decyzję w jaki sposób dzielić model (AABB boxy). Dla prostoty algorytmu dzielić można wzdłuż najdłuższej osi \cite{realTimeRendering}. Następnie dzielimy trójkąty na dwie grupy poprzez sprawdzanie czy jego centroid \footnote{Centroid to punkt przecięcia median trójkąta (mediana to odcinek łączący wierzchołek ze środkiem przeciwległego boku) \cite{centroidWIki}} leży w jednym boxie, czy w drugim.
+\section{Konstrukcja drzewa BVH}
+
+Aby stworzyć strukturę drzewa należy teraz podjąć decyzję w jaki sposób dzielić model (AABB boxy). Dla prostoty algorytmu dzielić można wzdłuż najdłuższej osi \cite{realTimeRendering}. Następnie przypisujemy trójkąty do jednego lub drugiego poddrzewa BVH poprzez sprawdzanie czy jego centroid \footnote{Centroid to punkt przecięcia median trójkąta (mediana to odcinek łączący wierzchołek ze środkiem przeciwległego boku) \cite{centroidWIki}} leży po jednej czy drugiej stronie podziału.
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Centroid} 
+    \caption{Obrazek przedstawiający centroid trójkąta~\cite{centroidWIki}.}
+    \label{fig:centroid}
+\end{figure}
 
 
 \section{Przechodzenie przez drzewo BVH}
 
-Najważniejszym punktem w procedurze przechodzenia przez drzewo BVH jest testowanie przecięcia promienia z AABB. W tym przypadku test nie musi zwracać dokładnego punktu przecięcia, ale samą informację, czy do przecięcia doszło lub (jeśli potrzebna) odległość od punktu początkowego promienia do przecięcia. Jedną z metod jest tzw. slab test. 
+Najważniejszym punktem w procedurze przechodzenia przez drzewo BVH jest testowanie przecięcia promienia z AABB. W tym przypadku test nie musi zwracać dokładnego punktu przecięcia, ale samą informację, czy do przecięcia doszło lub (jeśli potrzebna) odległość od punktu początkowego promienia do przecięcia. Jedną z metod jest tzw. slab method. 
 
 
 Slab test polega na sprawdzaniu czy promień przecina wszystkie płaszczyzny wyznaczane przez osie x, y, z.
-Dla każdej osi należy obliczyć, AABB box zdefinowany jest jako dwa punkty $\bm{P_{min}} = (x_{min}, y_{min}, z_{min})$, $\bm{P_{max}} = (x_{max}, y_{max}, z_{max})$, parametr $t$, który można użyć do obliczenia punktu przecięcia używając równanie promienia \eqref{eq:ray}:
-\begin{equation}
-    t_{1} = \frac{\bm{P_{min}} - \bm{O}}{\bm{D}}
-\end{equation}
-\begin{equation}
-    t_{2} = \frac{\bm{P_{max} - \bm{O}}}{\bm{D}}
-\end{equation}
+Dla każdej osi należy obliczyć parametr $t$, który wyznacza możliwy punkt przecięcia~\eqref{eq:ray}. AABB box zdefinowany jest jako dwa punkty $\bm{P_{min}} = (x_{min}, y_{min}, z_{min})$, $\bm{P_{max}} = (x_{max}, y_{max}, z_{max})$, jak na rysunku~\ref{fig:aabbPic}.
+
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=0.8\textwidth]{AABB} 
+    \caption{Obrazek przedstawiający AABB~\cite{aabb}.}
+    \label{fig:aabbPic}
+\end{figure}
+
+Wzory na parametr $t$:
+\begin{align}
+    t_{1} &= \frac{\bm{P_{min}} - \bm{O}}{\bm{D}} \\
+    t_{2} &= \frac{\bm{P_{max}} - \bm{O}}{\bm{D}}
+\end{align}
 
 Następnym krokiem jest wybranie wartości największej i najmniejszej:
-\begin{equation}
-    t_{min} = \min(t_1, t_2)
-\end{equation}
-\begin{equation}
-    t_{max} = \max(t_1, t_2)
-\end{equation}
+\begin{align}
+    t_{min} &= \min(t_1, t_2) \\
+    t_{max} &= \max(t_1, t_2)
+\end{align}
 
 Następnie należy obliczyć wartości: 
-\begin{equation}
-    t_{near} = \max(t_{min_{x}}, t_{min_{y}}, t_{min_{z}})
-\end{equation}
-\begin{equation}
+\begin{align}
+    t_{near} = \max(t_{min_{x}}, t_{min_{y}}, t_{min_{z}}) \\
     t_{far} = \min(t_{max_{x}}, t_{max_{y}}, t_{max_{z}})
-\end{equation}
+\end{align}
 
 Jeśli $t_{near} <= t_{far}$ to promień jest na części wspólnej wyznaczonej przez płaszczyzny, czyli przecina AABB box, jeśli $t_{near} >= t_{far}$ lub $t_{far} < 0$ promień nie trafił w box.
 
@@ -76,9 +91,18 @@ Jeśli $t_{near} <= t_{far}$ to promień jest na części wspólnej wyznaczonej 
 Jeśli promień przetnie box AABB, wtedy trzeba sprawdzić czy wierzchołek ze struktury BVH jest liściem. Jeśli tak (liść ma w sobie trójkąty), to uruchamia się test przecięcia promień-trójkąt. W przypadku wierzchołków, które nie są liśćmi, funkcja wchodzi w rekurencje dla lewego potomka i prawego potomka.
 
 
+Podział nie zawsze jest optymalny, jak pokazuje rysunek \ref{fig:bvhSplit}. W podpunkcie $b$ widać, że AABB nachodzą się co powoduje, że sprawdzając przecięty trójkąt trzeba przejść przez dwóch potomków. Dlatego opracowano również inne metody.
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=0.8\textwidth]{BVHPodzial} 
+    \caption{Obrazek przedstawiający podział na podstawie punktu środkowego centroidów na osi~\cite{pbrbook}.}
+    \label{fig:bvhSplit}
+\end{figure}
+
 \section{Surface Area Heuristic}
 
-Istnieją też inne metody na budowę BVH, jedną z tych metod jest SAH "Surface Area Heuristic". W tej metodzie przy każdym podziale oblicza się koszt przeprowadzania testów przecięcia promienia z danym obiektem. Wzór na koszt \cite{pbrbook}:
+W tej metodzie przy konstrukcji każdego podziału oblicza się koszt przeprowadzania testów przecięcia promienia z danym obiektem. Wzór na koszt \cite{pbrbook}:
 \begin{equation}
     c(A,B) = t_{trav} + p_A\sum_{i=1}^{N_A} t_{isect}(a_i) + p_B\sum_{i=1}^{N_B}t_{isect}(b_i)
 \end{equation}
@@ -92,7 +116,16 @@ Istnieją też inne metody na budowę BVH, jedną z tych metod jest SAH "Surface
 \begin{equation}
     p_A = \frac{s_a}{s_b}
 \end{equation}
-
 \begin{itemize}
-    \item $s_a$ - powierzchnia danego AABB ($s_a > s_b$)
+    \item $s_a$ - powierzchnia danego AABB ($s_a < s_b$)
 \end{itemize}
+
+Wzór opisuje prawdopodobieństwo przecięcia powierzchni $A$ jeśli przecięta została powierzchnia $B$, rysunek~\ref{fig:bvhAB}
+
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=0.8\textwidth]{ABsah.png} 
+    \caption{Rysunek przedstawiający powierzchnię A i B}
+    \label{fig:bvhAB}
+\end{figure}

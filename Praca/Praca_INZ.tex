@@ -1,4 +1,20 @@
-\documentclass[a4paper,12pt]{report}
+%&lualatex
+
+\documentclass[
+  12pt,
+  a4paper,
+  oneside,
+  %parskip=half,
+  parskip=relative,
+  numbers=enddot,
+  headings=optiontoheadandtoc,
+  toc=listof,
+]{scrreprt}
+\usepackage{scrlayer-scrpage}
+\clearpairofpagestyles
+\automark[section]{chapter}
+\ihead{\headmark}
+\cfoot[\pagemark]{\pagemark}
 \usepackage{fontspec}
 \usepackage{polyglossia}
 \setmainlanguage{polish}
@@ -8,13 +24,16 @@
 \usepackage{setspace}
 \usepackage{enumitem}
 \usepackage{bm}
-\usepackage{amsmath}
-\usepackage{amsthm}
 \usepackage{amssymb}
+\let\gtrapprox\undefined
+\usepackage{mathtools}
+\usepackage{siunitx}
+\usepackage{physics-patch}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{svg}
 \usepackage{booktabs}
 \usepackage{algorithm}
 \usepackage{algorithmic}
@@ -25,8 +44,18 @@
   maxbibnames=6,
   minbibnames=1
 ]{biblatex}
+\usepackage[
+  hidelinks
+]{hyperref}
 
-\usepackage[textsize=small]{luatodonotes}
+%\usepackage[textsize=small]{luatodonotes}
+\usepackage[disable]{luatodonotes}
+
+\AtBeginDocument{\RenewCommandCopy\qty\SI}
+
+\sisetup{
+  range-phrase = {--},
+}
 
 \graphicspath{{Pictures/}}
 
@@ -75,29 +104,6 @@
   {\large 
     Toruń 2026
   }\\
-  \vspace{1.2 cm}
-  \begin{minipage}[t]{0.39\linewidth}
-    \centering
-    \noindent
-    Pracę przyjmuję i~akceptuję\\[0.8cm]
-    \dotfill{}\\
-    \textit{\small 
-      data i~podpis opiekuna pracy
-    }\\
-  \end{minipage}
-  \hfill
-  \begin{minipage}[t]{0.51\linewidth}
-    \centering
-    \noindent
-    Potwierdzam złożenie pracy dyplomowej\\[0.8cm]
-    \mbox{}\hspace*{.5cm}\dotfill{}\hspace*{.5cm}\mbox{}\\
-    \textit{\small 
-      data i~podpis pracownika dziekanatu
-    }\\
-  \end{minipage}
-  \mbox{}
-  \vfill
-  \hbox{}
 \end{center}
 \thispagestyle{empty}
 \end{titlepage}
@@ -110,6 +116,9 @@
 \pagenumbering{arabic}
 \setcounter{page}{1} % Rozpoczęcie numerowania od tego miejsca
 \tableofcontents
+
+\newcommand{\point}[1]{\bm{#1}}
+\newcommand{\vecbm}[1]{\bm{#1}}
 
 \include{Wstep/Wstep}
 \include{Rozdzial1/Rozdzial1}

@@ -1,11 +1,9 @@
-\chapter*{Podsumowanie}
-\addcontentsline{toc}{chapter}{Podsumowanie}
-\markboth{Podsumowanie}{Podsumowanie}
+\chapter[nonumber=true]{Podsumowanie}
 \label{chap:podsumowanie}
 
 \section{Testy}
 
-Po zaimplementowaniu drzewa BVH zostały wykonane testy wydajności silnika. Testy opierały się mierzeniu czasu jaki zajęło zrenderowanie jednej klatki w rozdzielczości 2200 x 1331, przy 10 odbiciach i 6 promieniach na piksel. Test zapisywał czasy renderowania sceny dla 3000 klatek, następnie na podstawie zgromadzonych danych wyznaczono średnią arytmetyczną czasu potrzebnego na wygenerowanie obrazu. Renderowano model Stanford dragon zbudowany z 19332 trójkątów. Testy odbywały się w konfiguracji release z włączoną optymalizacją /Ox favor speed w Visual studio 2022 na karcie graficznej AMD Radeon RX 9070 xt.
+Po zaimplementowaniu drzewa BVH zostały wykonane testy wydajności silnika. Testy opierały się mierzeniu czasu jaki zajęło zrenderowanie jednej klatki w rozdzielczości 2200 x 1331, przy 10 odbiciach i 6 promieniach na piksel. Test zapisywał czasy renderowania sceny dla 3000 klatek, następnie na podstawie zgromadzonych danych wyznaczono średnią arytmetyczną czasu potrzebnego na wygenerowanie obrazu. Renderowano model Stanford dragon zbudowany z \num{19332} trójkątów. Testy odbywały się w konfiguracji release z włączoną optymalizacją /Ox favor speed w Visual studio 2022 na karcie graficznej AMD Radeon RX 9070 xt.
 
 \begin{table}[htbp]
     \centering

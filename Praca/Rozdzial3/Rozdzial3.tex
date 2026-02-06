@@ -1,33 +1,45 @@
 \chapter{Materiały i modele oświetlenia}
 \label{chap:materialy}
 
-\section{Materiały w grafice komputerowej}
-
-W rzeczywistości zachowanie światła padającego na dany obiekt będzie zależało od materiału z którego ten obiekt jest stworzony np. światło padające na metal będzie odbijało się inaczej od światła padającego na plastik. W grafice komputerowej chcemy symulować właściwości różnych materiałów za pomocą tzw. modeli oświetlenia.
+Zachowanie światła padającego na dany obiekt będzie zależało od materiału z którego ten obiekt jest stworzony. Na przyład światło padające na metal będzie odbijało się inaczej od światła padającego na plastik. W grafice komputerowej chcemy symulować właściwości różnych materiałów za pomocą tzw. modeli oświetlenia.
 
 
-Model oświetlenia, to matematyczny opis zachowania światła w scenie. Określa w jaki sposób obiekty powinny być renderowane tj. w jaki sposób światło odbija się od powierzchni obiektów. Modele oświetlenia możemy podzielić na:
+Model oświetlenia, to matematyczny opis zachowania światła w scenie. Określa w jaki sposób obiekty powinny być renderowane tj. w jaki sposób światło odbija się od powierzchni obiektów. Modele oświetlenia możemy podzielić na~\cite{realTimeRendering}:
 \begin{itemize}
     \item Modele oświetlenia lokalnego (local illumination) - kolor danej powierzchni zależy tylko od materiału, z którego powierzchnia jest zrobiona i źródła światła.
-    \item Modele oświetlenia globalnego (global illumination) - kolor danej powierzchni zależy od materiału, z którego powierzchnia jest zrobiona, źródła światła i światła odbitego od innych obiektów. \cite{realTimeRendering}
+    \item Modele oświetlenia globalnego (global illumination) - kolor danej powierzchni zależy od materiału, z którego powierzchnia jest zrobiona, źródła światła i światła odbitego od innych obiektów.
 \end{itemize} 
 
 
 \section{Model oświetlenia lokalnego}
 
-Jednym z najpopularniejszych modeli oświetlenia lokalnego jest model Phonga (ang. Phong reflection model). Model Phonga składa się z trzech komponentów:
+Jednym z najpopularniejszych modeli oświetlenia lokalnego jest model Phonga (ang. Phong reflection model). Model Phonga~\cite{phong} składa się z trzech komponentów:
 \begin{itemize}
     \item Ambient - światło otoczenia. W tym algorytmie wpływ innych obiektów na jasność i kolor danego modelu (global illumination) jest symulowane poprzez dodanie pewnej stałej wartości do jasności i koloru obiektu.
     \item Diffuse - światło rozproszone. Najważniejszy komponent oświetlenia, światło padające na powierzchnię odbija się we wszystkich kierunkach równomiernie \cite{pbrbook}
     \item Specular - światło zwierciadlane, odblask.
 \end{itemize}
 
-Wzór przedstawiający ostateczne oświetlenie danego punktu \cite{phong}:
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=1\textwidth]{PhongKomponenty} 
+    \caption{Obrazek przedstawia komponenty tworzące model phonga~\cite{phongWiki}}
+    \label{fig:phongComp}
+\end{figure}
+
+Wzór przedstawiający ostateczne oświetlenie danego punktu:
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=1\textwidth]{Blinn_Vectors} 
+    \caption{Wektory w modelu phonga~\cite{phongWiki}}
+    \label{fig:phongVec}
+\end{figure}
 
 \begin{equation}
     I = I_{a}k_{a} + k_{d}I_{i}(\bm{n} \cdot \bm{l}) + k_{s}I_{i}(\bm{r} \cdot \bm{v})^s
 \end{equation}
-
+%
 Gdzie: 
 \begin{itemize}
     \item $I_{a}$ - natężenie światła otoczenia.
@@ -48,44 +60,85 @@ W przypadku wielu źródeł światła w scenie wzór przyjmuje postać:
     I = I_{a}k_{a} + \sum_{i}^{lights}k_{d}I_{i}(\bm{n} \cdot \bm{l_{i}}) + \sum_{i}^{lights}k_{s}I_{i}(\bm{r_{i}} \cdot \bm{v})^s
 \end{equation}
 
-Ulepszeniem tego modelu jest Model Blinna-Phonga w którym oblicza się tzw. halfway vector $\bm{h} = \frac{\bm{l} + \bm{v}}{\|\bm{l + v}\|}$ i zamienia się $\bm{r} \cdot \bm{v}$ na $\bm{n} \cdot \bm{h}$
+Wadą modelu Phonga jest ,,ucinanie się" odblasku lub jego zanik gdy kąt pomiędzy obserwatorem a wektorem odbicia jest większy niż 90 stopni, wtedy $\vecbm{r} \cdot \vecbm{v}$ jest ujemny, co doprowadza do zaniku komponentu odbicia lustrzanego (iloczyn skalarny ogranicza się od dołu 0). Problem rozwiązany jest w modelu Blinna-Phonga w którym oblicza się tzw. halfway vector (rysunek~\ref{fig:phongHVec}) $\bm{h} = \frac{\bm{l} + \bm{v}}{\|\bm{l + v}\|}$ i zamienia się $\bm{r} \cdot \bm{v}$ na $\bm{n} \cdot \bm{h}$~\cite{phongOpenGL}.
 
+\begin{equation}
+    I_{Blinn-Phong} = I_{a}k_{a} + k_{d}I_{i}(\bm{n} \cdot \bm{l}) + k_{s}I_{i}(\bm{n} \cdot \bm{h})^s
+\end{equation}
 
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=1\textwidth]{phongVSblinphong} 
+    \caption{Prównanie modeli Phonga i Blinna-Phonga~\cite{phongOpenGL}}
+    \label{fig:phongBlinn}
+\end{figure}
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=0.8\textwidth]{halfwayVector} 
+    \caption{Rysunek przedstawia ,,halfway vector"~\cite{phongOpenGL}}
+    \label{fig:phongHVec}
+\end{figure}
 
 \section{Model oświetlenia globalnego}
 
 W modelach oświetlenia globalnego (ang. \textit{global illumination}) do obliczenia natężenia światła (koloru piksela) w danym punkcie bierze się pod uwagę źródło światła jak i otoczenie - światło odbite od innych powierzchni. Efekty takie jak: realistyczne cienie, odbicia i obiekty transparentne są implementowane za pomocą algorytmów globalnego oświetlenia.
     
 
-Algorytmy global illumination oparte są na tzw. \textit{rendering equation} \cite{realTimeRendering}:
+Algorytmy oświetlenia globalnego oparte są na tzw. równaniu renderingu (ang. \textit{rendering equation})~\cite{realTimeRendering}:
 \begin{equation}
-    L_{o}(\bm{p}, \bm{v}) = L_{e}(\bm{p}, \bm{v}) + \int_{\Omega}f(\bm{l}, \bm{v})\bm{L_{o}}(r(\bm{p}, \bm{l}), \bm{-l})(\bm{n} \cdot \bm{l})^{+}d\bm{l}
+    \bm{L_{o}}(\bm{p}, \bm{v}) = \bm{L_{e}}(\bm{p}, \bm{v}) + \int_{\Omega}f(\bm{l}, \bm{v})\bm{L_{o}}(r(\bm{p}, \bm{l}), \bm{-l})(\bm{n} \cdot \bm{l})^{+}d\bm{l}
 \label{eq:rendering}
 \end{equation}
-
+%
 gdzie:
 \begin{itemize}
     \item $\bm{L_{o}(\bm{p}, \bm{v})}$ - światło wychodzące od punktu $p$ w kierunku $\bm{v}$ (kierunek kamery).
     \item $\bm{L_{e}(\bm{p}, \bm{v})}$ - światło emitowane przez powierzchnię w punkcie $p$ w kierunku $\bm{v}$.
     \item $\Omega$ - to powierzchnia półsfery, która znajduje się nad punktem dla którego oblicza się wychodzące światło. Całkowanie po tej półsferze odpowiada sumowaniu wkładu światła docierającego ze wszystkich możliwych kierunków.
-    \item $f(\bm{l}, \bm{v})$ - to tzw. \textit{bidirectional reflectance distribution function} (dalej BRDF). BRDF to funkcja opisująca w jaki sposób światło nadchodzące z kierunku $\bm{l}$ jest odbijane w kierunku $\bm{v}$ przez dany materiał.
+    \item $f(\bm{l}, \bm{v})$ - to tzw. dwukierunkowa funkcja rozkładu odbicia (ang. \textit{bidirectional reflectance distribution function} dalej BRDF). BRDF to funkcja opisująca w jaki sposób światło nadchodzące z kierunku $\bm{l}$ jest odbijane w kierunku $\bm{v}$ przez dany materiał.
     \item $\bm{L_{o}}(r(\bm{p}, \bm{l}), \bm{-l})$ - przychodzące światło. $p$ to punkt na powierzchni, a $\bm{l}$ to kierunek. Funkcja $r(p, \bm{l})$ zwraca punkt przecięcia się promienia, którego $p$ to punkt początkowy, a $\bm{l}$ kierunek. Komponent ten oznacza, że światło przychodzące do punktu $p$ jest światłem wychodzącym od innego punktu.
     \item $(\bm{n} \cdot \bm{l})^{+}$ - iloczyn skalarny wektora normalnego powierzchni z wektorem kierunku światła, ponieważ oba wektory są znormalizowane wynikiem jest cosinus kąta pomiędzy tymi wektorami. $+$ oznacza branie tylko dodatnich wyników. 
 \end{itemize}
 
 
-Analitycznie równanie \ref{eq:rendering} jest niemożliwe do rozwiązania (poza bardzo prostymi scenami), ponieważ aby rozwiązać równanie dla punktu $p$ trzeba znać wynik dla punktu wcześniejszego $p'$, powstaje nieskończona rekurencja na nieskończonej liczbie kierunków z których światło dochodzi do punktu $p$.
+Równanie \ref{eq:rendering} jest niemożliwe do rozwiązania analitycznego (poza bardzo prostymi scenami), ponieważ aby rozwiązać równanie dla punktu $p$ trzeba znać wynik dla punktu wcześniejszego $p'$, powstaje nieskończona rekurencja na nieskończonej liczbie kierunków z których światło dochodzi do punktu $p$.
 
-Równanie renderingu rozwiązuje się metodami numerycznymi np. metodą monte-carlo. 
+Równanie renderingu rozwiązuje się metodami numerycznymi np. metodą Monte--Carlo.
 
 
-Przykładem modelu oświetlenia, który jest wykorzystywany w implementacji global illumination (jak i local illumination) jest model Cook-Torrance \cite{cookTorrance}. Model bazuje na tzw. \textit{microfacet theory}, polega ona na spostrzeżeniu, że w rzeczywistości nie ma idealnie gładkich powierzchni (najbliżej jest lustro), złożone są z "mikropowierzchni", które skierowane są pod różnym kątem. Poziom nierówności powierzchni opisuje się parametrem \textit{roughness}. 
+Aby przybliżyć wynik całki w równaniu \ref{eq:rendering} używając metodę Monte--Carlo należy wylosować $N$ próbek i obliczyć średnią wartość funkcji pod całką.
 
+\begin{algorithm}[H]
+    \caption{Estymacja Monte Carlo koloru piksela (antyaliasing)}
+    \label{alg:monte_carlo_pixel}
+    \begin{algorithmic}[1] % [1] dodaje numerację linii
+        \STATE $\bm{totalColor} \gets (0, 0, 0)$
+        \FOR{$i = 0$ \TO $raysPerPixel$}
+            \STATE $\bm{\epsilon} \gets \text{RandomVec3}(seed, -0.001, 0.001)$
+            \STATE $\bm{d}_{jitter} \gets \text{normalize}(\bm{ray.direction} + \bm{\epsilon})$
+            \STATE $jitteredRay \gets \text{Ray}(\bm{ray.origin}, \bm{d}_{jitter})$
+            \STATE $\bm{totalColor} \gets \bm{totalColor} + \text{TraceRay}(jitteredRay, seed)$
+        \ENDFOR
+        \STATE $\bm{finalColor} \gets \bm{totalColor} / \text{float}(raysPerPixel)$
+    \end{algorithmic}
+\end{algorithm}
+
+
+Przykładem BRDF, który jest wykorzystywany w implementacji oświetlenia globalnego (jak i lokalnego) jest model Cook-Torrance \cite{cookTorrance}. Model bazuje na tzw. \textit{microfacet theory}, polega ona na spostrzeżeniu, że w rzeczywistości nie ma idealnie gładkich powierzchni (najbliżej jest lustro), złożone są z "mikropowierzchni", które skierowane są pod różnym kątem. Poziom nierówności powierzchni opisuje się parametrem chropowatości (ang.\textit{roughness}). 
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=0.8\textwidth]{MIcrofacet} 
+    \caption{Rysunek przedstawia mikropowierzchnie.~\cite{pbrbook}}
+    \label{fig:microfacetPic}
+\end{figure}
 
 Funkcja BRDF modelu Cook-Torrance dla odbić lustrzanych\cite{ue4}: 
 
 \begin{equation}
-    f_{cookTorrance} = \frac{DFG}{4(\bm{n} \cdot \bm{l})(\bm{n} \cdot \bm{v})}
+    \label{eq:cookTorranceEq}
+    f_{cookTorrance} = \frac{D(\bm{n}, \bm{h}, \alpha)F(\theta)G(\bm{n}, \bm{v}, \bm{l})}{4(\bm{n} \cdot \bm{l})(\bm{n} \cdot \bm{v})}
 \end{equation}
 
 gdzie:
@@ -99,7 +152,7 @@ gdzie:
 \end{itemize}
 
 
-Wybór funkcji $D$ i $G$ może być różny, najpopularniejszą funkcją $D$ jest funkcja Trowbridge-Reitz (GGX), a $G$ to funkcja Smitha.
+Wybór funkcji $D$ i $G$ może być różny, najpopularniejszą funkcją $D$ jest funkcja Trowbridge-Reitz (GGX - ,,Ground Glass Unknown"~\cite{GGX}), a $G$ to funkcja Smitha.
 
 \begin{align}
     D_{GGX}(\bm{n}, \bm{h}, \alpha) &= \frac{\alpha^2}{\pi((\bm{n} \cdot \bm{h})^2(\alpha^2 - 1) + 1)^2} \\[10pt]
@@ -110,7 +163,7 @@ Wybór funkcji $D$ i $G$ może być różny, najpopularniejszą funkcją $D$ jes
 gdzie: 
 
 \begin{itemize}
-    \item $\alpha$ to parametr materiału \textit{roughness}
+    \item $\alpha$ to parametr materiału ,,chropowatość" (ang. \textit{roughness}).
     \item $k$ = $\frac{(\alpha + 1)^2}{8}$
 \end{itemize}
 
@@ -119,14 +172,36 @@ Współczynnik Fresnela w większości przypadków przybliża się tzw. przybli�
     F_{Schlick} = F_0 + (1 - F_0)(1 - \cos(\theta))^5
 \end{equation}
 
-$F_0$ to współczynnik odbicia światła padającego prostopadle do powierzchni. W silniku przyjmuje się bazową wartość $f_0 = 0.04$.
+$F_0$ to współczynnik odbicia światła padającego prostopadle do powierzchni. W silniku przyjmuje się bazową wartość dla dielektryków (niemetale pomijając wyjątki) $f_0 = 0.04$. Jeśli obiekt jest metalem, to wartość $F_0$ obliczana jest według wzoru:
 
+\begin{align}
+    \bm{F}_{\text{dielectric}} &= 0,04 \\
+    \bm{F}_0 &= \text{lerp}(\bm{F}_{\text{dielectric}}, \bm{\text{material}}.{\text{albedo}}, \bm{\text{material}}.{\text{metalness}})
+\end{align}
 
-Przedstawiony powyżej wzór służy do opisania odbić lustrzanych (ang. specular reflection). Aby opisać światło rozproszone (ang. diffuse) można posłużyć się dowolnym modelem np. standardowym modelem Lamberta. 
+Wzór \ref{eq:cookTorranceEq} służy do opisania odbić lustrzanych (ang. specular reflection). Do pełnego modelu brakuje jeszcze części opisującej światło rozproszone, np. modelu lamberta. 
 
-\begin{figure}[H]
+\begin{equation}
+    \bm{f_{\text{diffuse}}} = \frac{\sigma}{\pi}
+\end{equation}
+Gdzie:
+$\sigma$ - to albedo (kolor) obiektu.
+%
+Razem:
+\begin{equation}
+    \bm{f}(\bm{v}, \bm{l}) = \bm{f}_{\text{diffuse}}(\bm{v}, \bm{l}) + \bm{f}_{\text{specular}}(\bm{v}, \bm{l})
+\end{equation}
+
+\begin{figure}[tbph]
     \centering
-    \includegraphics[width=1\textwidth]{Cienie} 
-    \caption{Przykład globalnego oświetlenia - miękkie cienie. W silniku nie zaimplementowano świateł, są tylko materiały emisyjne.}
+    \includegraphics[width=1\textwidth]{WholeModel} 
+    \caption{Obrazek przedstawia cały model oświetlenia~\cite{cookTorranceModel}}
+    \label{fig:lightModel}
+\end{figure}
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=1\textwidth]{Shadows} 
+    \caption{Przykład globalnego oświetlenia - miękkie cienie. Widać również wpływ sfer na kolor podłoża.}
     \label{fig:shadows}
 \end{figure}

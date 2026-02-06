@@ -1,20 +1,49 @@
+\chapter{Biblioteki i narzędzia}
+\label{chap:libs}
+
+\section{DirectX 11}
+
+DirectX 11~\cite{DX11Cytat} jest to biblioteka graficzna wykorzystywana głównie do tworzenia gier komputerowych (np. Baldur's Gate 3, Wiedźmin 3) lub innych aplikacji graficznych. Biblioteka została stworzona w 2009 roku przez firmę Microsoft. Dostępna jest tylko na komputerach z systemem Windows i konsolach Xbox.
+
+
+W silniku wykorzystywana jest do grafiki poprzez shadery. Shader to program działający na karcie graficznej.
+
+\section{Win32}
+Win32~\cite{win}, jest to interfejs programistyczny systemu Windows. Zawiera w sobie funkcje umożliwiające działanie programów w systemie. Okno prezentowanego silnika zostało stworzone za pomocą tej biblioteki.
+
+\section{ImGui}
+
+ImGui~\cite{imgui} to biblioteka wykorzystywana do tworzenia interfejsu użytkownika. Napisana jest w myśl paradygmatu "Immediate Mode GUI" (IMGUI), który głównie polega na tym, że interfejs jest cały czas odświeżany, nie przechowuje on stanu między klatkami przez co jest zawsze zsynchronizowany z danymi (inaczej niż w interfejsach tworzonych za pomocą win32, retained mode). Biblioteka ta jest również łatwiejsza w obsłudze niż np. biblioteka Qt. 
+
+
+ImGui wykorzystuje wybrany backend (w tym przypadku backend napisany w DX11) aby renderować interfejs.
+
+\section{Assimp}
+
+Assimp~\cite{Assimp}-- Open Asset Import Library jest to biblioteka umożliwiająca łatwe ładowanie modeli 3D w różnych formatach. W silniku wykorzystywane są formaty obj, glb. Napisana jest w języku C++. Modele 3D pobrano z internetu, linki dostępne są w pliku ModelCredits.txt, w folderze projektu. 
+
+\section{Stb\_Image}
+
+Stb\_Image~\cite{StbIMG} jest to biblioteka wykorzystywana do ładowania tekstur w różnych formatach. Silnik wykorzystuje format .hdr używany w teksturach otoczenia. Biblioteka napisana jest w języku C. Tekstury pobrano ze strony ,,Poly Haven", jest to darmowa biblioteka tekstur hdr, tekstur pbr (materiały) i modeli 3D.
+
+\section{Visual Studio}
+
+Program napisano wykorzystując IDE (ang. \textit{Integrated development environment}) Visual Studio w wersji Community 2022~\cite{vs2022}. Korzystano z dodatkowych pakietów: ,,Programowanie aplikacji klasycznych w języku C++" i ,,Projektowanie gier przy użyciu języka C++".  Z rozszerzeń wykorzystano ,,HLSL Tools for Visual Studio".
+
+\section{Premake}
+Jako narzędzie do konfiguracji projektu korzystano z Premake~\cite{premake}. Premake jest to narzędzie które czytając skrypt, napisany w języku Lua, tworzy plik projektu np. solucje Visual Studio. Do pełnej automatyzacji budowania plików projektów i bibliotek dodatkowo użyto skryptów .bat.
+
 \chapter{Prezentacja silnika}
-\label{chap:engine}
 
-\section{Biblioteki}
-\todo[inline]{Myślę, że warto używane narzędzia i~biblioteki opisać w~osobnym rozdziale, a~nie w~podrozdziale ,,Prezentacja silnika''}
-
+\section{Interfejs}
+%
+Interfejs podzielony jest na 4 sekcje:
 \begin{itemize}
-\item
-  \todo{Wtedy każdy z~tych punktów byłby osobną sekcją}
-  \textbf{DirectX 11}\todo{Tu można by dodać cytowanie} jest to biblioteka graficzna wykorzystywana głównie do tworzenia gier komputerowych (np. Baldur's Gate 3, Wiedźmin 3) lub innych aplikacji graficznych. Biblioteka została stworzona w 2009 roku przez firmę Microsoft. Dostępna jest tylko na komputerach z systemem \todoarea{,,Windows'' lub ,,MS Windows''}{windows} i konsolach Xbox. \todo{Nowy akapit (jeśli sekcja)}W silniku wykorzystywana jest do grafiki poprzez shadery \footnote{Shader to program działający na karcie graficznej\todo[inline]{Jak treść zostanie rozbudowana, to to nie musi być footnote}} takie jak: compute shader, pixel shader i vertex shader.
-    \item \textbf{Win32} jest to interfejs programistyczny systemu Windows. Zawiera w sobie funkcje umożliwiające działanie programów w systemie. Okno prezentowanego silnika zostało stworzone za pomocą tej biblioteki.\todo{Jak ImGui ma się do Win32?}
-    \item \textbf{ImGui}\todo{Tu należy dodać cytowanie} biblioteka wykorzystywana do tworzenia interfejsu użytkownika. Napisana jest w myśl paradygmatu "Immediate Mode GUI" (IMGUI), który głównie polega na tym, że interfejs jest cały czas odświeżany, nie przechowuje on stanu między klatkami przez co jest zawsze zsynchronizowany z danymi. Biblioteka ta jest również łatwiejsza w obsłudze niż np. biblioteka \todoarea{Qt}{QT}. 
-    \item \textbf{Assimp}\todo{Tu albo trochę dalej należy dodać cytowanie} Open Asset Import Library jest to biblioteka umożliwiająca łatwe ładowanie modeli 3D w różnych formatach np. obj, glb.\todo{Z jakich formatów korzysta program?} Napisana jest w języku \todoarea{Albo C, albo C++}{C/C++}.
-    \item \textbf{Stb\_Image}\todo{Tu należy dodać cytowanie} biblioteka wykorzystywana do ładowania tekstur w \todoarea{a w jakich formatach są używane?}{różnych formatach}.\todo{W jakim języku napisana?}
+    \item \textbf{Viewport} -- tutaj renderowany jest obraz.
+    \item \textbf{Spheres} -- ustawienia położenia i promienia każdej sfery.
+    \item \textbf{Materials} -- ustawienia parametrów materiałów.
+    \item \textbf{Settings} -- ustawienia renderowania 
 \end{itemize}
-\todo[inline]{Brakuje informacji o~tym, skąd zostały wzięte modele 3D, i~skąd zostały wzięte używane tekstury.}
-\item[inline]{Może warto napisać z~jakiego IDE (i~z~jakich pluginów) się korzystało, i~jak rozwiązano zależności i/lub budowanie: premake, CMake, MSBuild, Conan, Build2, vcpkg, Meson, Bazel, make/Makefile.}
 
 \begin{figure}[htbp]
     \centering
@@ -129,7 +158,7 @@ W tej części przedstawione zostaną implementacje wcześniej omówionych algor
 
 \end{lstlisting}
 
-Zmienna $a$ ma wartość $1$, ponieważ $ray.direction$ jest wektorem znormalizowanym, iloczyn skalarny dwóch tych samych znormalizowanych wektorów wynosi $1$. 
+Zmienna $a$ ma wartość $1$, ponieważ $ray.direction$ jest wektorem znormalizowanym, iloczyn skalarny dwóch tych samych znormalizowanych wektorów wynosi $1$. Wybór mniejszej wartości z $t_1$ i $t_2$ jest ważny dla poprawnego renderowania wielu sfer w scenie, bez tego powstawałyby błędy ,,nachodzenia" się sfer. 
 
 
 \subsection{Implementacja testu przecięcia promień-trójkąt}
@@ -183,6 +212,205 @@ TriangleHit TriangleIntersection(Ray ray, Triangle tri)
 }
 \end{lstlisting}
 
+W kodzie sprawdzane są wyniki pośrednie $a$, $u$, $v$, aby wykryć przypadki szczególne omówione w rozdziale~\ref{chap:podstawy}.
+
+\subsection{Implementacja testu przecięcia promienia z AABB}
+\begin{lstlisting}
+float IntersectAABB(const Ray ray, const BVHNode node)
+{
+    float3 invDir = 1 / ray.direction.xyz;
+    float3 t1 = (node.aabbMin.xyz - ray.origin.xyz) * invDir;
+    float3 t2 = (node.aabbMax.xyz - ray.origin.xyz) * invDir;
+    
+    float3 tmin = min(t1, t2);
+    float3 tmax = max(t1, t2);
+    
+    float tNear = max(max(tmin.x, tmin.y), tmin.z);
+    float tFar = min(min(tmax.x, tmax.y), tmax.z);
+    
+    if (tFar <= tNear || tFar < 0.0f)
+    {
+        return -1.0f;
+    }
+    
+    return tNear;
+}
+\end{lstlisting}
+
+Zgodnie z opisanym algorytmem obliczane są poszczególne wartości. Zwracaną zmienną jest $\text{tNear}$, oznacza ona punkt w którym promień wchodzi do pudełka AABB, $\text{tFar}$ oznacza punkt w którym promień wychodzi z pudełka.
+
+\subsection{Konstrukcja BVH}
+
+\begin{lstlisting}
+    void Scene::BuildBVH(int numOfTriangles)
+	{
+		m_BVHNodes.resize(2 * numOfTriangles - 1);
+		m_TriIndexes.resize(numOfTriangles); 
+
+		for (int i = 0; i < numOfTriangles; i++)
+		{
+			m_TriIndexes[i] = i;
+
+			Triangle& tri = m_Triangles[i];
+
+			XMVECTOR v1 = XMLoadFloat4(&tri.v1);
+			XMVECTOR v2 = XMLoadFloat4(&tri.v2);
+			XMVECTOR v3 = XMLoadFloat4(&tri.v3);
+
+			XMVECTOR sum = XMVectorAdd(XMVectorAdd(v1, v2), v3);
+			XMVECTOR centroid = XMVectorScale(sum, 0.3333f);
+
+			XMStoreFloat4(&tri.centroid, centroid);
+		}
+
+		BVHNode& root = m_BVHNodes[rootNodeIndex];
+		root.leftFirst = 0;
+		root.triangleCount = numOfTriangles;
+
+		UpdateNodeBounds(rootNodeIndex);
+		SubDivide(rootNodeIndex);
+
+		m_RenderConfiguration.numOfNodes = nodesUsed;
+	}
+\end{lstlisting}
+
+Funkcja zaimplementowana jest w klasie Scene, która przechowuje m.in tablicę trójkątów modelu i tablicę wierzchołków drzewa BVH. Wiadomo, że maksymalną liczbą wierzchołków drzewa BVH jest wartość $2\text{numOfTriangles - 1}$~\cite{bvh}. Dlatego przed rozpoczęciem obliczeń, w ramach małej optymalizacji, rozmiar tablicy wierzchołków (std::vector) jest odpowiednio zmieniany. Tablica $\text{TriIndexes}$ zawiera w sobie indeksy trójkątów. Następnie w pętli przygotowywane są centroidy dla każdego trójkąta. Korzeń drzewa inicjalizowany jest w indeksie $0$ w tablicy. Kolejnym krokiem jest wywołanie funkcji $\text{UpdateNodeBounds}$ i $\text{SubDivide}$.
+
+\begin{lstlisting}
+    void Scene::UpdateNodeBounds(uint32_t nodeIndex)
+	{
+		BVHNode& node = m_BVHNodes[nodeIndex];
+		XMVECTOR aabbMin = XMVectorSet(1e30f, 1e30f, 1e30f, 1e30f);
+		XMVECTOR aabbMax = XMVectorSet(-1e30f, -1e30f, -1e30f, -1e30f);
+
+		for (uint32_t first = node.leftFirst, i = 0; i < node.triangleCount; i++)
+		{
+			int leafTriIdx = m_TriIndexes[first + i];
+			Triangle& leafTri = m_Triangles[leafTriIdx];
+
+			XMVECTOR v1 = XMLoadFloat4(&leafTri.v1);
+			XMVECTOR v2 = XMLoadFloat4(&leafTri.v2);
+			XMVECTOR v3 = XMLoadFloat4(&leafTri.v3);
+
+			aabbMin = XMVectorMin(aabbMin, v1);
+			aabbMin = XMVectorMin(aabbMin, v2);
+			aabbMin = XMVectorMin(aabbMin, v3);
+
+			aabbMax = XMVectorMax(aabbMax, v1);
+			aabbMax = XMVectorMax(aabbMax, v2);
+			aabbMax = XMVectorMax(aabbMax, v3);
+
+		}
+
+		XMStoreFloat4(&node.aabbMin, aabbMin);
+		XMStoreFloat4(&node.aabbMax, aabbMax);
+	}
+\end{lstlisting}
+W tej funkcji dobierane są nowe pudełka dla poszczególnych wierzchołków drzewa BVH.
+\begin{lstlisting}
+    void Scene::SubDivide(uint32_t nodeIndex)
+	{
+		BVHNode& node = m_BVHNodes[nodeIndex];
+
+		if (node.triangleCount <= 2)
+		{
+			return;
+		}
+
+		XMVECTOR aabbMin = XMLoadFloat4(&node.aabbMin);
+		XMVECTOR aabbMax = XMLoadFloat4(&node.aabbMax);
+
+		XMVECTOR extent = XMVectorSubtract(aabbMax, aabbMin);
+		int axis = 0;
+
+		XMFLOAT4 ex;
+		XMStoreFloat4(&ex, extent);
+
+		if (ex.y > ex.x)
+		{
+			axis = 1;
+		}
+
+		if (ex.z > ((axis == 0) ? ex.x : ex.y))
+		{
+			axis = 2;
+		}
+
+		XMFLOAT4 aabbMinf;
+		XMStoreFloat4(&aabbMinf, aabbMin);
+
+		float splitPos = 0.0f;
+		if (axis == 0)
+		{
+			splitPos = aabbMinf.x + ex.x * 0.5f;
+		}
+		else if (axis == 1)
+		{
+			splitPos = aabbMinf.y + ex.y * 0.5f;
+		}
+		else
+		{
+			splitPos = aabbMinf.z + ex.z * 0.5f;
+		}
+		
+		int i = node.leftFirst;
+		int j = i + node.triangleCount - 1;
+
+		while (i <= j)
+		{
+			XMVECTOR cen = XMLoadFloat4(&m_Triangles[m_TriIndexes[i]].centroid);
+
+			float centroidAxis = 0.0f;
+			if (axis == 0)
+			{
+				centroidAxis = XMVectorGetX(cen);
+			}
+			else if (axis == 1)
+			{
+				centroidAxis = XMVectorGetY(cen);
+			}
+			else
+			{
+				centroidAxis = XMVectorGetZ(cen);
+			}
+
+			if (centroidAxis < splitPos)
+			{
+				i++;
+			}
+			else
+			{
+				std::swap(m_TriIndexes[i], m_TriIndexes[j]);
+				j--;
+			}
+		}
+
+		int leftCount = i - node.leftFirst;
+
+		if (leftCount == 0 || leftCount == node.triangleCount)
+		{
+			return;
+		}
+
+		int leftChildIndex = nodesUsed++;
+		int rightChildIndex = nodesUsed++;
+
+
+		m_BVHNodes[leftChildIndex].leftFirst = node.leftFirst;
+		m_BVHNodes[leftChildIndex].triangleCount = leftCount;
+		m_BVHNodes[rightChildIndex].leftFirst = i;
+		m_BVHNodes[rightChildIndex].triangleCount = node.triangleCount - leftCount;
+		node.leftFirst = leftChildIndex;
+		node.triangleCount = 0;
+
+		UpdateNodeBounds(leftChildIndex);
+		UpdateNodeBounds(rightChildIndex);
+
+		SubDivide(leftChildIndex);
+		SubDivide(rightChildIndex);
+	}
+\end{lstlisting}
+Funkcja dzieląca węzły drzewa na mniejsze według najdłuższej osi. Jest to funkcja rekurencyjna (wywoływana na CPU), jej warunkiem stopu jest węzeł zawierający maksymalnie 2 trójkąty.
 \subsection{Przechodzenie przez drzewo BVH}
 
 \begin{lstlisting}

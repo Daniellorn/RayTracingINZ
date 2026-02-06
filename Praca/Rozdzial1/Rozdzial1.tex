@@ -6,105 +6,152 @@ W dalszej części będę posługiwać się takimi oznaczeniami:
 
 \begin{itemize}
     \item $a$ - wartość skalarna.
-    \item $\bm{C}$ - punkt w przestrzeni trójwymiarowej.
-    \item $\bm{v}$ - wektor, w więkości przypadków $\bm{v} = (x, y, z)$.
-    \item $\bm{n}$ - wektor normalny. Wektor prostopadły do danej powierzchni.
-    \item $\bm{a} \cdot \bm{b}$ - iloczyn skalarny.
-    \item $\bm{a} \times \bm{b}$ - iloczyn wektorowy.
-    \item Promień - promień (ang. ray) jest podstawową strukturą w ray tracingu. Składa się on z punktu początkowego (ang. origin) i kierunku (ang. direction). Oba elementy zdefiniowane są jako wektory trójwymiarowe, z czego kierunek jest wektorem znormalizowanym (długość równa 1).
+    \item $\point{C}$ - punkt w przestrzeni trójwymiarowej.
+    \item $\vecbm{v}$ - wektor $\vecbm{v} = (x, y, z)$.
+    \item $\vecbm{n}$ - wektor normalny. Wektor prostopadły do danej powierzchni.
+    \item $\vecbm{a} \cdot \vecbm{b}$ - iloczyn skalarny.
+    \item $\vecbm{a} \times \vecbm{b}$ - iloczyn wektorowy.
+    \item Promień - promień (ang. ray) jest podstawową strukturą w ray tracingu. Składa się on z punktu początkowego (ang. \emph{origin}) i kierunku (ang. \emph{direction}). Oba elementy zdefiniowane są jako wektory trójwymiarowe, z czego kierunek jest wektorem znormalizowanym (długość równa 1).
 \end{itemize}
 
 \section{Algorytm ray tracingu}
+\label{sec:rtalgorytm}
 
-Algorytm ray tracingu znany jest już od 1979 roku, kiedy John Turner Whitted opublikował artykuł "An improved illumination model for shaded display" opisujący rekurencyjny ray tracing \cite{whitted}. 
+Algorytm ray tracingu znany jest już od 1979 roku, kiedy John Turner Whitted opublikował artykuł ,,An improved illumination model for shaded display" opisujący rekurencyjny ray tracing~\cite{whitted}. 
 
-Ideą algorytmu jest naśladowanie światła. W opisie zachowania się światła i jego oddziaływania z materią korzysta się z teorii falowej i optyki geometrycznej. W rzeczywistości światło porusza się po liniach prostych, od źródła np. Słońca. Ray tracing działa odwrotnie, tzn. źródłem promieni jest "oko" kamery i od niego wychodzi światło w generowaną scenę, ponieważ jak w rzeczywistości mózg człowieka "renderuje" obraz korzystając tylko z tych promieni, które padają na siatkówkę w oku. Gdy wystrzelony z kamery promień uderza w jakiś obiekt punkt przecięcia staje się punktem początkowym kolejnego promienia (rekurencyjna natura algorytmu)\cite{realTimeRendering}.
+Ideą algorytmu jest naśladowanie światła. W opisie zachowania się światła i jego oddziaływania z materią korzysta się z teorii falowej i optyki geometrycznej. W rzeczywistości światło porusza się po liniach prostych, od źródła np. Słońca. Klasyczny ray tracing działa odwrotnie, tzn. źródłem promieni jest ,,oko" kamery i od niego wychodzi światło w generowaną scenę, ponieważ jak w rzeczywistości mózg człowieka ,,renderuje" obraz korzystając tylko z tych promieni, które padają na siatkówkę w oku. Gdy wystrzelony z kamery promień uderza w jakiś obiekt, punkt przecięcia staje się punktem początkowym kolejnego promienia (rekurencyjna natura algorytmu)~\cite{realTimeRendering}. Rysunek \ref{fig:RT} przedstawia opisaną ideę algorytmu. Promienie wychodzą z kamery i uderzają w obiekt, następnie generowane są kolejne promienie, które w pewnym momencie trafiają do źródła światła.
 
-\begin{figure}[H]
+\begin{figure}[tbph]
     \centering
     \includegraphics[width=1\textwidth]{SchematRT} 
-    \caption{Rysunek przedstawia ideę ray tracingu. Promienie wychodzą z kamery i uderzają w obiekty, następnie generowane są kolejne promienie, które w pewnym momencie trafiają do źródła światła.}
+    \caption{Rysunek przedstawia ideę ray tracingu.}
     \label{fig:RT}
 \end{figure}
 
-Należy się teraz zastanowić, w jaki sposób obiekty w naturze "dostają" swój kolor. Innymi słowy - dlaczego pomidor jest czerwony? Obserwując eksperyment przedstawiający rozszczepienie światła pryzmatem, lub tęczę, możemy zauważyć, że białe światło rozszczepia się na kilka barw (w uproszczeniu). Dzieje się tak, ponieważ barwy światła mają różne długości fal. Zakres długości fal dla światła widzialnego przez człowieka wynosi: \approx380-780 nanometrów\cite{fuw}. Gdy promienie ze źródła uderzą w jakiś obiekt, (np. w pomidor) to materiał obiektu wchłonie w siebie pewną część światła o danej długości, a odbije resztę. Przykładowy pomidor odbije głównie barwę czerwoną, czyli fale o długości w zakresie ~620-780 nm, następnie mózg interpretuje daną długość fali na odpowiedni kolor. W ray tracingu procedura jest podobna, jedynym dodatkiem do światła w scenie jest jego źródło, reszta oświetlenia pochodzi od promieni odbitych od obiektów.
+Należy się teraz zastanowić, w jaki sposób obiekty w naturze ,,dostają" swój kolor. Innymi słowy -- dlaczego pomidor jest czerwony? Obserwując eksperyment przedstawiający rozszczepienie światła pryzmatem, lub tęczę, możemy zauważyć, że białe światło rozszczepia się na kilka barw (w uproszczeniu). Dzieje się tak, ponieważ w skład światła widzialnego wchodzą fale o różnej długości. Zakres długości fal dla światła widzialnego przez człowieka wynosi około \qtyrange{380}{780}{\nano\metre}~\cite{fuw}. Gdy promienie ze źródła uderzą w jakiś obiekt, (np. w pomidor) to materiał obiektu wchłonie w siebie pewną część światła o danej długości, a odbije resztę. Przykładowy pomidor odbije głównie barwę czerwoną, czyli fale o długości w zakresie \qtyrange{620}{780}{\nano\metre}. 
 
 
-Symulowanie światła pozwala programistom na uzyskanie szczegółowych i poprawnych fizycznie efektów takich jak: odbicie, refrakcja itd. Wcześniej, przed erą ray tracingu w czasie rzeczywistym, programiści musieli korzystać z różnych sztuczek aby zaimplementować te efekty, dla przykładu odbicia tworzone były poprzez zrenderowanie danego obiektu drugi raz ale odwrotnie w np. kałurzy, lustrze. Korzystając z ray tracingu efekt odbicia jest dużo prostszy w implementacji.  
+Budowę oka ludzkiego można podzielić na 3 błony~\cite{oko}:
+\begin{itemize}
+    \item zewnętrzna błona włóknista składająca się z twardówki i rogówki,
+    \item środkowa naczyniowa złożona z tęczówki, ciała rzęskowego i naczyniówki,
+    \item wewnętrznej czuciowej (siatkówka).
+\end{itemize}
+
+Promienie światła przechodząc przez źrenicę i soczewkę trafiają na siatkówkę. W siatkówce odbywają się procesy fizyczne i biochemiczne, które przetwarzają bodziec świetlny na bodziec nerwowy. Odpowiadają za to tzw. czopki i pręciki. W oku ludzkim znajduje się około 7 milionów czopków i 130 milionów pręcików~\cite{oko}. 
 
 
-Minusem algorytmu jest jego złożoność obliczeniowa. Dla przykładu, bez optymalizacji BVH mając model złożony z 100 000 trójkątów, w rozdzielczości 2560x1440, mając ustawione 2 próbki na piksel i 5 odbiciach, program musiałby dla każdego piksela wykonać (w tej rozdzielczości mamy 3686400 pikseli) 1 000 000 testów. 
+Czopki można podzielić pod względem czułości na inne długości fali:
+\begin{itemize}
+    \item Czopki typu L -- maksymalna czułość około \qty{564}{\nano\metre}. Odpowiedzialne za detekcję światła czerwonego.
+    \item Czopki typu M -- maksymalna czułość około \qty{534}{\nano\metre}. Odpowiedzialne za detekcję światła zielonego.
+    \item Czopki typu S -- maksymalna czułość około \qty{420}{\nano\metre}. Odpowiedzialne za detekcję światła niebieskiego.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{cone} 
+    \caption{Obrazek przedstawia znormalizowaną czułość spektralna poszczególnych czopków.~\cite{cones}}
+    \label{fig:czulosci_czopkow}
+\end{figure}
+
+Czopki odpowiadają za widzenie kształtu i barw przedmiotów w jasnym oświetleniu. Pręciki zajmują się przygotowaniem oka do słabego oświetlenia i do rozróżniania zarysów przedmiotów~\cite{oko}.
+
+
+Bazując na budowie ludzkiego oka i informacji w jaki sposób człowiek interpretuje kolory stworzono model RGB. RGB jest modelem addytywnym, nazywane są tak modele w których wynikiem dodania do siebie podstawowych barw (czerwonego, zielonego i niebieskiego) jest barwa biała, w modelach subtraktywnych wynikiem jest kolor czarny.
+
+Symulowanie światła pozwala programistom na uzyskanie szczegółowych i poprawnych fizycznie efektów takich jak: odbicie, refrakcja itd. Wcześniej, przed erą ray tracingu, programiści musieli korzystać z różnych sztuczek aby zaimplementować te efekty. Dla przykładu odbicia tworzone były poprzez zrenderowanie danego obiektu drugi raz ale odwrotnie np. w lustrze. Korzystając z ray tracingu efekt odbicia jest dużo prostszy w implementacji.  
+
+
+Minusem algorytmu jest jego złożoność obliczeniowa. Dla przykładu, bez optymalizacji mając model złożony z \num{100000} trójkątów, w rozdzielczości 2560x1440 (\num{3686400} pikseli), mając ustawione 2 próbki na piksel i 5 odbiciach, program musiałby dla każdego piksela wykonać \num{1000000} testów. 
 
 
 \section{Badanie przecięcia promienia ze sferą}
 
-Test przecięcia promienia ze sferą jest jednym z najprostszych algorytmów w tej tematyce i idealnie nadaje się do przedstawienie procesu wyprowadzania takich algorytmów.
+Test przecięcia promienia ze sferą jest jednym z najprostszych algorytmów tego typu i idealnie nadaje się do przedstawienia procesu wyprowadzania takich algorytmów.
 
-Należy zacząć od zapisania równania sfery o środku w punkcie 
-$\bm{C} = (c_x, c_y, c_z)$.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{Promien-sfera} 
+    \caption{Obrazek przedstawia możliwe warianty przecięcia sfery~\cite{realTimeRendering}}
+    \label{fig:raySphere}
+\end{figure}
+
+Wyprowadzenie testu należy zacząć od zapisania równania sfery o środku w punkcie
+$\point{C} = (c_x, c_y, c_z)$ i promieniu $r$.
 \begin{equation}
     (x - c_x)^2 + (y - c_y)^2 + (z - c_z)^2 = r^2
 \label{eq:sphere1}
 \end{equation}
 
-Punkt $\bm{P} = (p_x, p_y, p_z)$ jest punktem leżącym na sferze. Można zapisać wektor o długości $r$ ze środka sfery do tego punktu zapisując:
-\[
-(\bm{P} - \bm{C})
-\]
-Teraz równanie sfery można zapisać tak:
+Punkt $\point{P} = (p_x, p_y, p_z)$ jest punktem leżącym na sferze. Można zapisać wektor o długości $r$ ze środka sfery do tego punktu zapisując:
 \begin{equation}
-    (\bm{P} - \bm{C}) \cdot (\bm{P} - \bm{C}) = r^2
+    (\point{P} - \point{C})
+\end{equation}
+Używając powyższych oznaczeń równanie sfery można zapisać tak:
+\begin{equation}
+    (\point{P} - \point{C}) \cdot (\point{P} - \point{C}) = r^2
 \label{eq:sphere2}
 \end{equation}
 
-Każdy punkt $\bm{P}$ spełniający to równanie leży na sferze.
+Każdy punkt $\point{P}$ spełniający to równanie leży na sferze.
 
 
-Szukaną wartością w tym badaniu jest zmienna $t$, na podstawie której można obliczyć współrzędne punktu $P$.
-Równanie opisujące promień o punkcie początkowym $O$ i kierunku $D$: 
+Szukaną wartością w tym badaniu jest zmienna $t$, na podstawie której można obliczyć współrzędne punktu $\point{P}$.
+Równanie opisujące promień o punkcie początkowym $\point{O}$ i kierunku zdefiniowanym przez wektor $\vecbm{d}$: 
 \begin{equation}
-    \bm{P}(t) = \bm{O} + t\bm{D}
+    \point{P}(t) = \point{O} + t\vecbm{d}
 \label{eq:ray}
 \end{equation}
 Wstawiając~\eqref{eq:ray} do~\eqref{eq:sphere2}:
 \begin{equation}
-    (\bm{O} + t\bm{D} - \bm{C}) \cdot (\bm{O} + t\bm{D} - \bm{C}) = r^2
+    (\point{O} + t\vecbm{d} - \point{C}) \cdot (\point{O} + t\vecbm{d} - \point{C}) = r^2
 \end{equation}
 Nie ma potrzeby rozpisywania całego iloczynu skalarnego, zamiast tego można zapisać: 
 \begin{equation}
-    (\bm{D} \cdot \bm{D})t^2 + 2t\bm{\bm{D}} \cdot (\bm{O} - \bm{C}) + (\bm{O} - \bm{C}) \cdot (\bm{O} - \bm{C}) - r^2 = 0
+    (\vecbm{d} \cdot \vecbm{d})t^2 + 2t\bm{\vecbm{d}} \cdot (\point{O} - \point{C}) + (\point{O} - \point{C}) \cdot (\point{O} - \point{C}) - r^2 = 0
 \label{eq:T}
 \end{equation}
 Jest to równanie kwadratowe o współczynnikach: 
-\[
-a = \bm{D} \cdot \bm{D},
-b = 2\bm{D} \cdot (\bm{O} - \bm{C}),
-c = (\bm{O} - \bm{C}) \cdot (\bm{O} - \bm{C}) - r^2
-\]
-Wzór na paramter $t$: 
-\[
-t = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
-\]
-Równanie~\eqref{eq:T} może mieć rozwiązania dodatnie jak i ujemne. Silnik, aby poprawnie generować obrazy dla wielu sfer w scenie, potrzebuje wartości najbliższej i dodatniej (wartość ujemna świadczy o tym, że sfera jest za kamerą). W ramach oznaczenia przypadku braku rozwiązania równania~\eqref{eq:T} z funkcji zwracana jest wartość $-1.0$.  
+\begin{subequations}
+\label{eq:sphereCoefficients}
+\begin{align}
+    a &= \vecbm{d} \cdot \vecbm{d}, \\
+    b &= 2\vecbm{d} \cdot (\point{O} - \point{C}), \\
+    c &= (\point{O} - \point{C}) \cdot (\point{O} - \point{C}) - r^2.
+\end{align}
+\end{subequations}
+Otrzymujemy następujący wzór na parametr $t$: 
+\begin{equation}
+    t = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\end{equation}
+
+Równanie~\eqref{eq:T} może mieć rozwiązania dodatnie jak i ujemne. Silnik, aby poprawnie generować obrazy dla wielu sfer w scenie, potrzebuje wartości najbliższej i dodatniej (wartość ujemna świadczy o tym, że punkt przecięcia promienia ze sferą jest za kamerą). W ramach oznaczenia przypadku braku rozwiązania równania~\eqref{eq:T} z funkcji zwracana jest wartość $-1.0$.  
 
 
 \section{Badanie przecięcia promienia z trójkątem}
 
-Autorami przedstawionego poniżej algorytmu są Tomas Möller i Ben Trumbore \cite{MollerTrumbore}. W odróżnieniu od innych popularnych algorytmów szukających punkt przecięcia promienia z trójkątem, ten nie oblicza równania płaszczyzny wyznaczanej przez trójkąt, tylko opiera się na samych wierzchołkach trójkąta. Istnieją szybsze algorytmy np. algorytm Douga Baldwina i Michaela Webera \cite{BaldwinWeber}, ale wymagają one dodatkowych informacji razem z trójkątami. 
+Autorami przedstawionego poniżej algorytmu są Tomas Möller i Ben Trumbore \cite{MollerTrumbore}. W odróżnieniu od innych popularnych algorytmów szukających punkt przecięcia promienia z trójkątem, ten nie oblicza równania płaszczyzny wyznaczanej przez trójkąt, tylko opiera się na samych wierzchołkach trójkąta. Istnieją szybsze algorytmy np. algorytm Douga Baldwina i Michaela Webera \cite{BaldwinWeber}, ale wymagają one wcześniejszego obliczenia transformacji współrzędnych z systemu globalnego do barycentrycznego. Koszt dostępu do tych danych może być zbyt duży w porównaniu z zyskami szybkości względem algorytmu Möller'a Trumbore'a.
 
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{BarycentricCords} 
+    \caption{Obrazek przedstawia współrzędne barycentryczne trójkąta~\cite{realTimeRendering}}
+    \label{fig:barycentric}
+\end{figure}
 
 \begin{definition}
+\label{def:barycentricDef}
 Współrzędne barycentryczne na trójkącie o wierzchołkach w punktach 
-$P_0, P_1, P_2$ to trójka liczb $(w, u, v) \in \mathbb{R}$, dzięki którym możemy przedstawić każdy punkt 
-na trójkącie w formie:
-\[
-f(u,v) = (1 - u - v)\bm{P_0} + u\bm{P_1} + v\bm{P_2}.
-\]
-Liczby $(w, u, v)$ spełniają następujące warunki:
+$P_0, P_1, P_2$ to trójka liczb $(w, u, v) \in \mathbb{R}$ spełniających następujące warunki:
 \[
 w + u + v = 1, \quad w \ge 0, \quad u \ge 0, \quad v \ge 0.
 \]
-[DODAC RYSUNEK Z REAL TIME RENDERING]
+Każdy punkt wewnątrz trójkąta można przedstawić jako: 
+\[
+f(u,v) = w\point{P_0} + u\point{P_1} + v\point{P_2} = (1 - u - v)\bm{P_0} + u\bm{P_1} + v\bm{P_2}.
+\]
 \end{definition}
 
 Znalezienie punktu przecięcia sprowadza się do rozwiązania układu równań: 
@@ -113,9 +160,9 @@ Znalezienie punktu przecięcia sprowadza się do rozwiązania układu równań:
     \label{eq:RayTri1}
 \end{equation}
 
-Gdzie $\bm{O}= (o_x, o_y, o_z)$ to punkt początkowy promienia, a $\bm{D} = (d_x, d_y, d_z)$ to kierunek.
+Tutaj $\bm{O}= (o_x, o_y, o_z)$ to punkt początkowy promienia, a $\bm{D} = (d_x, d_y, d_z)$ to kierunek.
 
-Po przepisanu na postać macierzową: 
+Po przepisaniu na postać macierzową: 
 \begin{equation}
 \begin{bmatrix}
 -\bm{D} & \bm{P_1} - \bm{P_0} & \bm{P_2} - \bm{P_0}
@@ -128,9 +175,9 @@ v
 =
 \bm{O} - \bm{P_0}
 \end{equation}
-
-Pomocnicze oznaczenia: $\bm{e_1} = \bm{P_1} - \bm{P_0}, \bm{e_2} = \bm{P_2} - \bm{P_0}, \bm{s} = \bm{O} - \bm{P_0}$
-
+%
+Wprowadzono następujące oznaczenia: $\bm{e_1} = \bm{P_1} - \bm{P_0}, \bm{e_2} = \bm{P_2} - \bm{P_0}, \bm{s} = \bm{O} - \bm{P_0}$
+%
 Używając oznaczeń układ równań ma postać: 
 \begin{equation}
     \begin{aligned}
@@ -139,7 +186,7 @@ Używając oznaczeń układ równań ma postać:
         -d_zt + e_{1z}u + e_{2z}v = s_z 
     \end{aligned}        
 \end{equation}
-
+%
 Wtedy macierz główna układu ma postać:
 \begin{equation}
     M = 
@@ -149,7 +196,7 @@ Wtedy macierz główna układu ma postać:
         -d_z & e_{1z} & e_{2z}
     \end{bmatrix}
 \end{equation}
-
+%
 Do rozwiązania układu równań można wykorzystać metodę Cramera: 
 \begin{equation}
     \begin{pmatrix}
@@ -182,7 +229,7 @@ Wtedy równanie można zapisać tak (zmieniając kolumny macierzy wyznacznik zmi
     (\bm{s} \times \bm{e_1}) \cdot \bm{D}
 \end{pmatrix}
 \end{equation}
-
+%
 Wprowadzając kolejne oznaczenia, dla uproszczenia: $\bm{q} = \bm{D} \times \bm{e_2} \\ \bm{r} = \bm{s} \times \bm{e_1}$
 Otrzymane równanie:
 \begin{equation}
@@ -199,5 +246,7 @@ Otrzymane równanie:
         \bm{r} \cdot \bm{D}
     \end{pmatrix}
 \end{equation}
+Implementując algorytm tworzy się funkcję, która zwraca parametr $t$, dzięki niemu znany jest punkt przecięcia.
 
-W implementacji funkcja zwraca parametr $t$, dzięki niemu znany jest punkt przecięcia.
+
+Przypadki szczególne (brak trafienia w trójkąt, trójkąt znajduje się za punktem początkowym promienia) wykrywa się sprawdzając wartości pośrednie. Pierwszym sprawdzeniem jest upewnienie się, że wyznacznik główny jest różny od 0 ($\bm{q} \cdot \bm{e_1} \neq 0$). Następnie sprawdza się czy wartości $u$ i $v$ spełniają warunki z \ref{def:barycentricDef}. Ostatnim krokiem jest sprawdzenie wartości $t$, musi być większa od 0 (punkt przecięcia nie może być za kamerą).
