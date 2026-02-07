@@ -75,6 +75,7 @@ namespace App {
 		int numOfBounces = 2;
 		int accumulate = 0;
 		int numOfNodes = 1;
+		int skyTexture = 1;
 	};
 
 	class Scene

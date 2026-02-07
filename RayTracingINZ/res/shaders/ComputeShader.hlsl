@@ -20,6 +20,7 @@ cbuffer RenderConfiguration : register(b2)
     int numOfBounces;
     int accumulate;
     int numOfNodes;
+    int skyTexture;
 }
 
 struct Ray
@@ -381,17 +382,13 @@ float3 TraceRay(Ray ray, inout uint seed)
         
         if (info.hitDistance < 0.0f)
         {
-            //break;
-            //float3 unitDir = normalize(ray.direction);
-            //float t = 0.5f * (unitDir.y + 1.0f);
-            //light += lerp(float3(1.0f, 1.0f, 1.0f), float3(0.5f, 0.7f, 1.0f), t) * contribution;
-            //break;
-            
-            float2 skyUV = dirToUV(ray.direction);
-            float3 skyColor = g_EnvironmentMap.SampleLevel(g_LinearSampler, skyUV, 0).rgb;
-            light += skyColor * contribution;
+            if (skyTexture == 1)
+            {
+                float2 skyUV = dirToUV(ray.direction);
+                float3 skyColor = g_EnvironmentMap.SampleLevel(g_LinearSampler, skyUV, 0).rgb;
+                light += skyColor * contribution;
+            }            
             break;
-            
         }
 
         Material material = g_Materials[info.materialIndex];

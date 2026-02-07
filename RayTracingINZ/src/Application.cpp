@@ -137,6 +137,7 @@ namespace App {
         std::array<float, 3000> frameRateHistory;
         int index = 0;
         bool performance = false;
+        bool skyTextureOption = true;
         Timer timer;
 
 		while (msg.message != WM_QUIT)
@@ -354,6 +355,10 @@ namespace App {
                     }
                     ImGui::EndCombo();
                 }
+
+                ImGui::Checkbox("SkyTexture", &skyTextureOption);
+
+                renderConfiguration.skyTexture = skyTextureOption ? 1 : 0;
 
                 ImGui::End();
 
