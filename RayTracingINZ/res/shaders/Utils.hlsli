@@ -65,7 +65,7 @@ float3 CosineWeightedSample(inout uint seed, float3 normal)
     
     
     float3 tangent = abs(normal.y) < 0.999f
-                     ? normalize(cross(normal, float3(0, 1, 0)))
+                     ? normalize(cross(normal, float3(0, 0, 1)))
                      : normalize(cross(normal, float3(1, 0, 0)));
     float3 bitangent = cross(normal, tangent);
     
