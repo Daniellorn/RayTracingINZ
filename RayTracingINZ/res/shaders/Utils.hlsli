@@ -59,17 +59,17 @@ float3 CosineWeightedSample(inout uint seed, float3 normal)
     float sinTheta = sqrt(xi2);
     
     
-    float x = sinTheta * cos(phi);
-    float y = sinTheta * sin(phi);
-    float z = cosTheta;
+    float3 H;
+    H.x = sinTheta * cos(phi);
+    H.y = sinTheta * sin(phi);
+    H.z = cosTheta;
     
     
-    float3 tangent = abs(normal.y) < 0.999f
-                     ? normalize(cross(normal, float3(0, 0, 1)))
-                     : normalize(cross(normal, float3(1, 0, 0)));
-    float3 bitangent = cross(normal, tangent);
+    float3 upVector = abs(normal.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+    float3 tangentX = normalize(cross(upVector, normal));
+    float3 tangentY = cross(normal, tangentX);
     
-    return normalize(x * tangent + y * bitangent + z * normal);
+    return normalize(tangentX * H.x + tangentY * H.y + normal * H.z);
 }
 
 
