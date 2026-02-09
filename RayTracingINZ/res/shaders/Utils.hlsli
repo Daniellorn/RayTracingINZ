@@ -49,22 +49,29 @@ float3 RandomUnitVec(inout uint seed)
 //}
 
 
-float3 RandomVec3OnUnitHemiSphere(inout uint seed, float3 normal)
+float3 CosineWeightedSample(inout uint seed, float3 normal)
 {
-    float z = RandomFloat(seed) * 2.0f - 1.0f;
-    float a = RandomFloat(seed) * 2.0f * PI;
-    float r = sqrt(1.0f - z * z);
-    float x = r * cos(a);
-    float y = r * sin(a);
+    float xi1 = RandomFloat(seed);
+    float xi2 = RandomFloat(seed);
     
-    float3 randomVec = float3(x, y, z);
-    if (dot(randomVec, normal) < 0.0f)
-    {
-        return -randomVec;
-    }
+    float phi = 2.0f * PI * xi1;
+    float cosTheta = sqrt(1.0f - xi2);
+    float sinTheta = sqrt(xi2);
     
-    return randomVec;
+    
+    float x = sinTheta * cos(phi);
+    float y = sinTheta * sin(phi);
+    float z = cosTheta;
+    
+    
+    float3 tangent = abs(normal.y) < 0.999f
+                     ? normalize(cross(normal, float3(0, 1, 0)))
+                     : normalize(cross(normal, float3(1, 0, 0)));
+    float3 bitangent = cross(normal, tangent);
+    
+    return normalize(x * tangent + y * bitangent + z * normal);
 }
+
 
 float3 RandomVec3(inout uint seed, float min, float max)
 {

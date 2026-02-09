@@ -441,11 +441,10 @@ float3 TraceRay(Ray ray, inout uint seed)
             {
                 return light;
             }
-            float3 L = normalize(RandomVec3OnUnitHemiSphere(seed, info.normal));
-            float NdotL = saturate(dot(info.normal, L));
+            float3 L = CosineWeightedSample(seed, info.normal);
             
             float3 kd = (1.0f - F) * (1.0f - material.metalness);
-            contribution *= (material.albedo.xyz * kd * NdotL * 2.0f) / (1.0f - reflectionChance);
+            contribution *= (material.albedo.xyz * kd) / (1.0f - reflectionChance);
             ray.direction = L;
         }
     }
