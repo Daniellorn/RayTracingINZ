@@ -58,6 +58,9 @@ Poza testami wydajności, testowano również poprawność stworzonego potoku gr
 
 Flaga \texttt{D3D11\_CREATE\_DEVICE\_DEBUG} aktywuje warstwę debugowania w DX11. Tryb ten rozszerza kontrolę błędów wynikających z: przesłania nieprawidłowych danych do GPU, błędnych parametrów w funkcjach tworzących potok, wycieków pamięci itd. W przypadku wystąpienia nieprawidłowości, warstwa diagnostyczna generuje szczegółowe komunikaty w oknie wyjściowym debuggera \cite{debugDX11}.
 
+
+Wykonano również testy jednostkowe dla funkcji implementującej BVH. Interfejs użytkownika przetestowano manualnie.
+
 \section{Zakończenie}
 
 Rozwój kart graficznych sprawił, że implementacja ray tracingu/path tracingu w czasie rzeczywistym nie jest czymś niemożliwym. Przedstawiony silnik nie używa pełnych możliwości sprzętu (RTCores), jednak jego wydajność po optymalizacji pozwoliła na przedstawienie podstawowych algorytmów w temacie ray tracingu. 

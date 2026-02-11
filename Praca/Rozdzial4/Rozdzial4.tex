@@ -242,6 +242,32 @@ Zgodnie z opisanym algorytmem obliczane są poszczególne wartości. Zwracaną z
 \subsection{Konstrukcja BVH}
 
 \begin{lstlisting}
+struct BVHNode
+{
+    aabb box;
+    BVHNode* left;
+    BVHNode* right;
+    bool isLeaf;
+    std::vector<Triangle> triangles;
+};
+\end{lstlisting}
+
+Tak może wyglądać naiwna definicja wierzchołka BVH. Jest ona problematyczna do odtworzenia po stronie shadera, ponieważ w shaderach modelu 5.0 nie można używać wskaźników. Problemem jest również zajmowana pamięć której rozmiaru nie można przewidzieć wykorzystując \textit{std::vector}.~\cite{bvh}
+
+
+\begin{lstlisting}
+    struct BVHNode
+	{
+		float4 aabbMin, aabbMax;
+		uint32_t leftFirst, triangleCount; 
+	};
+\end{lstlisting}
+
+Zoptymalizowana struktura BVHNode. Informację czy dany wierzchołek jest liściem sprawdza się patrząc na wartość zmiennej \textit{triangleCount}. Jeśli wynosi 0, to zmienna jest indeksem lewego potomka poprzedniego wierzchołka, jeśli jest większa od 0, to wierzchołek jest liściem.
+
+Taką definicję wierzchołka BVH można łatwo odwzorować w shaderze. 
+
+\begin{lstlisting}
     void Scene::BuildBVH(int numOfTriangles)
 	{
 		m_BVHNodes.resize(2 * numOfTriangles - 1);
@@ -476,7 +502,7 @@ while (stackPtr > 0)
 }
 \end{lstlisting}
 
-Silnik używa shaderów w wersji 5 (model 5.0), ta wersja nie może używać rekurencji (rekurencja dostępna jest dla shaderów DXR używających wsparcia sprzętowego RTCores \cite{DXR}), dlatego funkcja imituje rekurencje używając "stos". Z rozdziału \ref{chap:optymalizacja} wiadomo, że jeśli $triangleCount > 0$, to wierzchołek jest liściem, po sprawdzeniu wykonuje się standardowy kod sprawdzający przecięcie z trójkątem. Jeśli wierzchołek nie jest liściem, to jego potomków dodaje się do stosu. 
+Silnik używa shaderów w wersji 5 (model 5.0), ta wersja nie może używać rekurencji (rekurencja dostępna jest dla shaderów DXR używających wsparcia sprzętowego RTCores \cite{DXR}), dlatego funkcja imituje rekurencje używając "stos". Po sprawdzeniu czy wierzchołek jest liściem wykonuje się standardowy kod sprawdzający przecięcie z trójkątem. Jeśli wierzchołek nie jest liściem, to jego potomków dodaje się do stosu. 
 
 \subsection{Główna logika ray tracingu}
 
