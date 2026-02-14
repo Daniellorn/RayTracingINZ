@@ -1,7 +1,7 @@
 \chapter[nonumber=true]{Wstęp}
 \label{chap:wstep}
 
-W 2018 roku NVIDIA przedstawiła światu nową generację kart graficznych nazwanych RTX. Od tego roku każda kolejna seria począwszy od serii 20 do teraz (seria 50) jest wyposażona w tzw. RT Cores. Rdzenie RT są specjalnie stworzone do przyspieszania obliczeń związanych ze śledzeniem promieni (dalej będę używał nazwy ray tracing), w szczególności przy testowaniu przecięcia promienia z trójkątem i przechodzenia przez strukturę danych zwaną BVH (ang. bounding   volume hierarchy). Odpowiednikiem RT Cores w kartach graficznych od AMD są ,,Ray accelerators". Ray tracing jest   
+W 2018 roku NVIDIA przedstawiła światu nową generację kart graficznych nazwanych RTX. Od tego roku każda kolejna seria począwszy od serii 20 do teraz (seria 50) jest wyposażona w tzw. RT Cores. Rdzenie RT są specjalnie stworzone do przyspieszania obliczeń związanych ze śledzeniem promieni (dalej ray tracing), w szczególności przy testowaniu przecięcia promienia z trójkątem i przechodzenia przez strukturę danych zwaną BVH (ang. bounding   volume hierarchy). Odpowiednikiem RT Cores w kartach graficznych od AMD są ,,Ray accelerators". Ray tracing jest   
 bardzo wymagającym algorytmem pod względem obliczeniowym. Dodanie powyższych rozwiązań sprzętowych do GPU pozwoliły programistom implementowanie ray tracingu w czasie rzeczywistym np. w grach, gdzie  obecnie w jednej scenie może pojawić się kilka milionów trójkątów (dotychczas ray tracing wykorzystywany był głownie w filmach).  
 
 
@@ -9,4 +9,4 @@ W ramach pracy inżynierskiej stworzony został silnik graficzny przedstawiając
 
 
 Pierwszy rozdział tej pracy będzie poświęcony przedstawieniu podstaw ray tracingu, od opisania idei algorytmu do wyprowadzenia dwóch podstawowych procedur badania przecięć promienia z obiektami w scenie (promień-sfera i promień-trójkąt). W rozdziale drugim poruszone będzie zagadnienie optymalizacji silnika używając struktury danych BVH. W następnym rozdziale zostanie opisane zagadnienie materiałów i modeli oświetlenia wykorzystywanych w grafice komputerowej. Oba zagadnienia mają największy wpływ na aspekty wizualne.
-W czwartym rozdziale opisany będzie stworzony silnik i implementacje przedstawionych wcześniej algorytmów. W końcowej części pracy przedstawione zostaną wyniki testów wydajnościowych programu. Testy były przeprowadzone przed optymalizacją silnika i po optymalizacji, aby wykazać różnice wydajności. 
+W czwartym rozdziale opisane zostaną wykorzystane biblioteki i narzędzia. Rozdział piąty poświęcony będzie prezentacji silnika, od interfejsu programu do implementacji najważniejszych algorytmów. W końcowej części pracy przedstawione zostaną wyniki testów wydajnościowych programu. Testy były przeprowadzone przed optymalizacją silnika i po optymalizacji, aby wykazać różnice wydajności. 
