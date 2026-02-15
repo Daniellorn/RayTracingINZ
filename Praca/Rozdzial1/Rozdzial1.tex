@@ -24,7 +24,7 @@ Ideą algorytmu jest naśladowanie światła. W opisie zachowania się światła
 \begin{figure}[tbph]
     \centering
     \includegraphics[width=1\textwidth]{SchematRT} 
-    \caption{Rysunek przedstawia ideę ray tracingu.}
+    \caption{Rysunek przedstawia ideę ray tracingu. [Opracowanie własne]}
     \label{fig:RT}
 \end{figure}
 
@@ -126,7 +126,7 @@ Otrzymujemy następujący wzór na parametr $t$:
     t = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 \end{equation}
 
-Równanie~\eqref{eq:T} może mieć rozwiązania dodatnie jak i ujemne. Silnik, aby poprawnie generować obrazy dla wielu sfer w scenie, potrzebuje wartości najbliższej i dodatniej (wartość ujemna świadczy o tym, że punkt przecięcia promienia ze sferą jest za kamerą). W ramach oznaczenia przypadku braku rozwiązania równania~\eqref{eq:T} z funkcji zwracana jest wartość $-1.0$.  
+Równanie~\eqref{eq:T} może mieć rozwiązania dodatnie jak i ujemne. Silnik, aby poprawnie generować obrazy dla wielu sfer w scenie, potrzebuje wartości najmniejszej i dodatniej (wartość ujemna świadczy o tym, że punkt przecięcia promienia ze sferą jest za kamerą). W ramach oznaczenia przypadku braku rozwiązania równania~\eqref{eq:T} z funkcji zwracana jest wartość $-1.0$.  
 
 
 \section{Badanie przecięcia promienia z trójkątem}

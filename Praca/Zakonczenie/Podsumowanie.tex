@@ -19,10 +19,10 @@ Po zaimplementowaniu drzewa BVH zostały wykonane testy wydajności silnika. Tes
 
 Nie udało się dokładnie przetestować wydajności w wariancie bez BVH. Czas renderowania modelu w rozdzielczości 2200 x 1331, 2 odbiciom i 1 promieniu na piksel wyniósł prawie 700 ms, dalsze badanie nie miało sensu. Wynik jednoznacznie potwierdza wymóg implementowania drzew BVH dla optymalizacji, bez tych struktur ray tracing w czasie rzeczywistym byłby niemożliwy. 
 
-\begin{figure}[H]
+\begin{figure}[tbph]
     \centering
     \includegraphics[width=1\textwidth]{Wydajnosc} 
-    \caption{Zdjęcie testowanego modelu}
+    \caption{Zdjęcie testowanego modelu Stanford Dragon~\cite{DragonModel}}
     \label{fig:dragon}
 \end{figure}
 
@@ -40,6 +40,14 @@ Przeprowadzono również testy dla mniejszego modelu zbudowanego z 264 trójkąt
         Tree (bez BVH) & 60.00 \\ \hline
     \end{tabular}
 \end{table}
+
+
+\begin{figure}[tbph]
+    \centering
+    \includegraphics[width=1\textwidth]{Wydajnosc2} 
+    \caption{Zdjęcie testowanego modelu Tree~\cite{TreeModel}}
+    \label{fig:Tree}
+\end{figure}
 
 Poza testami wydajności, testowano również poprawność stworzonego potoku graficznego wykorzystując wbudowane w blibliotekę DX11 funkcje. 
 

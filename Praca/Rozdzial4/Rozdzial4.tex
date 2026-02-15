@@ -300,7 +300,7 @@ Taką definicję wierzchołka BVH można łatwo odwzorować w shaderze.
 	}
 \end{lstlisting}
 
-Funkcja zaimplementowana jest w klasie Scene, która przechowuje m.in tablicę trójkątów modelu i tablicę wierzchołków drzewa BVH. Wiadomo, że maksymalną liczbą wierzchołków drzewa BVH jest wartość $2\text{numOfTriangles - 1}$~\cite{bvh}. Dlatego przed rozpoczęciem obliczeń, w ramach małej optymalizacji, rozmiar tablicy wierzchołków (std::vector) jest odpowiednio zmieniany. Tablica $\text{TriIndexes}$ zawiera w sobie indeksy trójkątów. Następnie w pętli przygotowywane są centroidy dla każdego trójkąta. Korzeń drzewa inicjalizowany jest w indeksie $0$ w tablicy. Kolejnym krokiem jest wywołanie funkcji $\text{UpdateNodeBounds}$ i $\text{SubDivide}$.
+Funkcja zaimplementowana jest w klasie Scene, która przechowuje m.in tablicę trójkątów modelu i tablicę wierzchołków drzewa BVH. Wiadomo, że maksymalną liczbą wierzchołków drzewa BVH jest wartość $2\text{numOfTriangles - 1}$~\cite{bvh}. Dlatego przed rozpoczęciem obliczeń, w ramach małej optymalizacji, rozmiar tablicy wierzchołków (std::vector) jest odpowiednio zmieniany. Tablica $\text{TriIndexes}$ zawiera w sobie indeksy trójkątów. Następnie w pętli przygotowywane są centroidy dla każdego trójkąta. Korzeń drzewa inicjalizowany jest w indeksie $0$ w tablicy. Kolejnym krokiem jest wywołanie funkcji $\text{UpdateNodeBounds}$ i $\text{SubDivide}$. Powyższa implementacja jest implementacją naiwną. Wybrano ją ze względu na niskie skomplikowanie i szybkość budowania drzewa. Używając SAH (podejście opisane w rozdziale~\ref{chap:optymalizacja}) drzewo buduje się wolniej.
 
 \begin{lstlisting}
     void Scene::UpdateNodeBounds(uint32_t nodeIndex)
